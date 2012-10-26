@@ -77,8 +77,8 @@ loglevel 3
     write /proc/sys/kernel/panic_on_oops 1
     write /proc/sys/kernel/hung_task_timeout_secs 0
     write /proc/cpu/alignment 4
-    write /proc/sys/kernel/sched_latency_ns 10000000
-    write /proc/sys/kernel/sched_wakeup_granularity_ns 2000000
+    write /proc/sys/kernel/sched_latency_ns 800000
+    write /proc/sys/kernel/sched_wakeup_granularity_ns 50000
     write /proc/sys/kernel/sched_compat_yield 1
     write /proc/sys/kernel/sched_child_runs_first 0
     write /proc/sys/kernel/randomize_va_space 2
@@ -317,6 +317,31 @@ on boot
 # set RLIMIT_NICE to allow priorities from 19 to -20
     setrlimit 13 40 40
 
+# Define the oom_adj values for the classes of processes that can be
+# killed by the kernel.  These are used in ActivityManagerService.
+    setprop ro.FOREGROUND_APP_ADJ 0
+    setprop ro.VISIBLE_APP_ADJ 1
+    setprop ro.PERCEPTIBLE_APP_ADJ 2
+    setprop ro.HEAVY_WEIGHT_APP_ADJ 3
+    setprop ro.SECONDARY_SERVER_ADJ 4
+    setprop ro.BACKUP_APP_ADJ 5
+    setprop ro.HOME_APP_ADJ 6
+    setprop ro.HIDDEN_APP_MIN_ADJ 7
+    setprop ro.EMPTY_APP_ADJ 15
+
+# Define the memory thresholds at which the above process classes will
+# be killed.  These numbers are in pages (4k).
+    # These are currently tuned for tablets with approx 1GB RAM.
+    setprop ro.FOREGROUND_APP_MEM 8192
+    setprop ro.VISIBLE_APP_MEM 10240
+    setprop ro.PERCEPTIBLE_APP_MEM 12288
+    setprop ro.HEAVY_WEIGHT_APP_MEM 12288
+    setprop ro.SECONDARY_SERVER_MEM 14336
+    setprop ro.BACKUP_APP_MEM 14336
+    setprop ro.HOME_APP_MEM 14336
+    setprop ro.HIDDEN_APP_MEM 16384
+    setprop ro.EMPTY_APP_MEM 20480
+
 # Memory management.  Basic kernel parameters, and allow the high
 # level system server to be able to adjust the kernel OOM driver
 # parameters to match how it is managing things.
@@ -327,9 +352,13 @@ on boot
     chown root system /sys/module/lowmemorykiller/parameters/minfree
     chmod 0664 /sys/module/lowmemorykiller/parameters/minfree
 
+    write /sys/module/lowmemorykiller/parameters/adj 0,1,2,4,7,15
+    write /sys/module/lowmemorykiller/parameters/minfree 8192,10240,12288,14336,16384,20480
+
     # Tweak background writeout
     write /proc/sys/vm/dirty_expire_centisecs 200
-    write /proc/sys/vm/dirty_background_ratio  5
+    write /proc/sys/vm/dirty_background_ratio 65
+    write /proc/sys/vm/dirty_ratio 90
 
     # Permissions for System Server and daemons.
     chown radio system /sys/android_power/state
@@ -557,7 +586,7 @@ on boot
     setprop net.tcp.buffersize.umts    4094,87380,110208,4096,16384,110208
     setprop net.tcp.buffersize.hspa    4092,87380,704512,4096,16384,262144
     setprop net.tcp.buffersize.hsupa   4092,87380,704512,4096,16384,262144
-    setprop net.tcp.buffersize.hsdpa   4092,87380,704512,4096,16384,110208
+    setprop net.tcp.buffersize.hsdpa   4092,87380,704512,4096,16384,262144
     setprop net.tcp.buffersize.hspap   4092,87380,704512,4096,16384,262144
     setprop net.tcp.buffersize.edge    4093,26280,35040,4096,16384,35040
     setprop net.tcp.buffersize.gprs    4092,8760,11680,4096,8760,11680
