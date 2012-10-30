@@ -137,10 +137,31 @@ fi
 # Miscellaneous System tweaks
 
 if [ -e /sys/module/lowmemorykiller/parameters/minfree ]; then
-        echo "1024,2048,5120,10240,15360,20480" > /sys/module/lowmemorykiller/parameters/minfree
+        echo "10240,12288,14336,16384,20480,24576" > /sys/module/lowmemorykiller/parameters/minfree
 fi
 if [ -e /proc/sys/fs/lease-break-time ]; then
         echo "10" > /proc/sys/fs/lease-break-time
+fi
+
+# Tweak cfq io scheduler
+  for i in $(/sbin/busybox ls -1 /sys/block/mmc*)
+  do echo "0" > $i/queue/rotational
+    echo "0" > $i/queue/iostats
+    echo "1" > $i/queue/iosched/group_isolation
+    echo "8" > $i/queue/iosched/quantum
+    echo "1" > $i/queue/iosched/low_latency
+    echo "5" > $i/queue/iosched/slice_idle
+    echo "2" > $i/queue/iosched/back_seek_penalty
+    echo "1000000000" > $i/queue/iosched/back_seek_max
+  done
+
+# Power savings
+echo 2 > /sys/devices/system/cpu/sched_mc_power_savings
+
+# Run Init Scripts
+
+if [ -d /system/etc/init.d ]; then
+  /sbin/busybox run-parts /system/etc/init.d
 fi
 
 # Backup EFS
@@ -157,14 +178,8 @@ then
   #make sure that sdcard is mounted, media scanned..etc
   (
     sleep 500
-    /sbin/busybox cp /data/.redpill/efs* /sdcard
+    /sbin/busybox cp /data/.redpill/efs* /storage/sdcard0
   ) &
-fi
-
-# Run Init Scripts
-
-if [ -d /system/etc/init.d ]; then
-  /sbin/busybox run-parts /system/etc/init.d
 fi
 
 /sbin/busybox mount -t rootfs -o remount,ro rootfs
