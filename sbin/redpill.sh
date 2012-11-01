@@ -11,6 +11,34 @@ echo "NO_GENTLE_FAIR_SLEEPERS" > /sys/kernel/debug/sched_features
 mount -o noatime,remount,ro,discard,barrier=0,commit=60,noauto_da_alloc,delalloc /system /system;
 mount -o noatime,remount,rw,discard,barrier=0,commit=60,noauto_da_alloc,delalloc /data /data;
 
+# FileSync Control (Disabled for better IO throughput)
+echo 0 > /sys/class/misc/fsynccontrol/fsync_enabled
+
+# Pegasusq Governor Tweaks
+echo "75" > /sys/devices/system/cpu/cpufreq/pegasusq/up_threshold
+echo "30000" > /sys/devices/system/cpu/cpufreq/pegasusq/sampling_rate
+echo "2" > /sys/devices/system/cpu/cpufreq/pegasusq/sampling_down_factor
+echo "5" > /sys/devices/system/cpu/cpufreq/pegasusq/down_differential
+echo "50" > /sys/devices/system/cpu/cpufreq/pegasusq/freq_step
+echo "10" > /sys/devices/system/cpu/cpufreq/pegasusq/cpu_up_rate
+echo "20" > /sys/devices/system/cpu/cpufreq/pegasusq/cpu_down_rate
+echo "400000" > /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_freq_1_1
+echo "300000" > /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_freq_2_0
+echo "400000" > /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_freq_2_1
+echo "300000" > /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_freq_3_0
+echo "400000" > /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_freq_3_1
+echo "300000" > /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_freq_4_0
+echo "200" > /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_rq_1_1
+echo "100" > /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_rq_2_0
+echo "300" > /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_rq_2_1
+echo "200" > /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_rq_3_0
+echo "400" > /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_rq_3_1
+echo "300" > /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_rq_4_0
+echo "0" > /sys/devices/system/cpu/cpufreq/pegasusq/ignore_nice_load
+echo "1" > /sys/devices/system/cpu/cpufreq/pegasusq/io_is_busy
+echo "0" > /sys/devices/system/cpu/cpufreq/pegasusq/max_cpu_lock
+echo "0" > /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_lock
+
 # Miscellaneous Kernel tweaks
 
 if [ -e /proc/sys/kernel/msgmni ]; then
@@ -177,7 +205,7 @@ then
   chmod 777 /data/.redpill/efsbackup.tar.gz
   #make sure that sdcard is mounted, media scanned..etc
   (
-    sleep 500
+    sleep 1000
     /sbin/busybox cp /data/.redpill/efs* /storage/sdcard0
   ) &
 fi
