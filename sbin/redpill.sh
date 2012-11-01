@@ -8,11 +8,14 @@ mount -t debugfs none /sys/kernel/debug
 echo "NO_GENTLE_FAIR_SLEEPERS" > /sys/kernel/debug/sched_features
 
 # Mount Tweaks
-mount -o noatime,remount,ro,discard,barrier=0,commit=60,noauto_da_alloc,delalloc /system /system;
-mount -o noatime,remount,rw,discard,barrier=0,commit=60,noauto_da_alloc,delalloc /data /data;
+mount -o noatime,remount,ro,discard,barrier=0,commit=1,noauto_da_alloc,delalloc /system /system;
+mount -o noatime,remount,rw,discard,barrier=0,commit=1,noauto_da_alloc,delalloc /data /data;
 
 # FileSync Control (Disabled for better IO throughput)
 echo 0 > /sys/class/misc/fsynccontrol/fsync_enabled
+
+# SetCPU Min and Max Freq
+echo "1600000" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
 
 # Pegasusq Governor Tweaks
 echo "75" > /sys/devices/system/cpu/cpufreq/pegasusq/up_threshold
@@ -184,7 +187,8 @@ fi
   done
 
 # Power savings
-echo 2 > /sys/devices/system/cpu/sched_mc_power_savings
+echo "2" > /sys/devices/system/cpu/sched_mc_power_savings
+echo "3" > /sys/module/cpuidle_exynos4/parameters/enable_mask
 
 # Run Init Scripts
 
