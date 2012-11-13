@@ -14,16 +14,6 @@ mount -o noatime,remount,rw,discard,barrier=0,commit=1,noauto_da_alloc,delalloc 
 # FileSync Control (Disabled for better IO latency)
 echo 0 > /sys/class/misc/fsynccontrol/fsync_enabled
 
-# Camera Fix for Certain N7100 Devices
-if [ ! -f /data/cfw/SlimISP_*.bin ];
-then
-  cp /vendor/firmware/SlimISP_GK.bin /data/cfw/SlimISP_GK.bin
-  cp /vendor/firmware/SlimISP_ZK.bin /data/cfw/SlimISP_ZK.bin
-  chown system /data/cfw/*
-  chgrp media /data/cfw/*
-  chmod 0775 /data/cfw/*
-fi
-
 # SetCPU Min and Max Freq
 echo "1600000" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
 
@@ -207,6 +197,9 @@ chmod 777 /sys/block/mmcblk1/queue/read_ahead_kb
 echo "4096" > /sys/block/mmcblk1/queue/read_ahead_kb
 chmod 777 /sys/devices/virtual/bdi/179:0/read_ahead_kb
 echo "4096" > /sys/devices/virtual/bdi/179:0/read_ahead_kb
+
+# Set IO Scheduler (It's set to noop at boot)
+echo "sio" > /sys/block/mmcblk*/queue/scheduler
 
 # Run Init Scripts
 
