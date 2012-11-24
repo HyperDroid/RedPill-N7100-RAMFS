@@ -7,6 +7,9 @@ mount -o remount,rw /system
 mount -t debugfs none /sys/kernel/debug
 echo "NO_GENTLE_FAIR_SLEEPERS" > /sys/kernel/debug/sched_features
 
+# Enable dmesg
+echo "0" /proc/sys/kernel/dmesg_restrict
+
 # Mount Tweaks
 mount -o noatime,remount,ro,discard,barrier=0,commit=1,noauto_da_alloc,delalloc /system /system;
 mount -o noatime,remount,rw,discard,barrier=0,commit=1,noauto_da_alloc,delalloc /data /data;
