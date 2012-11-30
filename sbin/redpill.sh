@@ -1,21 +1,33 @@
 #!/sbin/busybox sh
 
+mkdir /data/.redpill
+chmod 777 /data/.redpill
+ccxmlsum=`md5sum /res/customconfig/customconfig.xml | awk '{print $1}'`
+if [ "a${ccxmlsum}" != "a`cat /data/.redpill/.ccxmlsum`" ];
+then
+  rm -f /data/.redpill/*.profile
+  rm -f /data/.redpill/.active.profile
+  echo ${ccxmlsum} > /data/.redpill/.ccxmlsum
+fi
+[ ! -f /data/.redpill/default.profile ] && cp /res/customconfig/default.profile /data/.redpill
+[ ! -f /data/.redpill/battery.profile ] && cp /res/customconfig/battery.profile /data/.redpill
+[ ! -f /data/.redpill/performance.profile ] && cp /res/customconfig/performance.profile /data/.redpill
+
+. /res/customconfig/customconfig-helper
+read_defaults
+read_config
+
 mount -o remount,rw /system
 /sbin/busybox mount -t rootfs -o remount,rw rootfs
 
-# Scheduler Tweaks
-mount -t debugfs none /sys/kernel/debug
-echo "NO_GENTLE_FAIR_SLEEPERS" > /sys/kernel/debug/sched_features
-
 # Enable dmesg
-echo "0" /proc/sys/kernel/dmesg_restrict
+if [ -e /proc/sys/kernel/dmesg_restrict ]; then
+        echo "0" > /proc/sys/kernel/dmesg_restrict
+fi
 
 # Mount Tweaks
 mount -o noatime,remount,ro,discard,barrier=0,commit=1,noauto_da_alloc,delalloc /system /system;
 mount -o noatime,remount,rw,discard,barrier=0,commit=1,noauto_da_alloc,delalloc /data /data;
-
-# FileSync Control (Disabled for better IO latency)
-echo 0 > /sys/class/misc/fsynccontrol/fsync_enabled
 
 # SetCPU Min and Max Freq
 echo "1600000" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
@@ -177,6 +189,50 @@ if [ -e /proc/sys/fs/lease-break-time ]; then
         echo "10" > /proc/sys/fs/lease-break-time
 fi
 
+# Boost SD Cards
+chmod 777 /sys/block/mmcblk0/queue/read_ahead_kb
+echo "4096" > /sys/block/mmcblk0/queue/read_ahead_kb
+chmod 777 /sys/block/mmcblk1/queue/read_ahead_kb
+echo "4096" > /sys/block/mmcblk1/queue/read_ahead_kb
+chmod 777 /sys/devices/virtual/bdi/179:0/read_ahead_kb
+echo "4096" > /sys/devices/virtual/bdi/179:0/read_ahead_kb
+
+#Check if STweaks is installed
+echo "Checking if STweaks is installed"
+stmd5sum=`/sbin/busybox md5sum /system/app/STweaks.apk | /sbin/busybox awk '{print $1}'`
+if [ "$stmd5sum" == "0936a23cbcf1092be8fba4a8905fcd22" ];then
+installstweaks=1
+fi
+
+if [ ! -f /system/.redpill/stweaks-installed ]; then
+installstweaks=1
+fi
+
+if [ "$installstweaks" == "1" ];then
+  rm /system/app/STweaks.apk
+  rm -f /data/app/com.gokhanmoral.STweaks*
+  rm -f /data/dalvik-cache/*STweaks.*
+  rm -f /data/app/com.gokhanmoral.stweaks*
+  rm -f /data/dalvik-cache/*stweaks*
+
+  cat /res/STweaks.apk > /system/app/STweaks.apk
+  chown 0.0 /system/app/STweaks.apk
+  chmod 644 /system/app/STweaks.apk
+  mkdir /system/.redpill
+  chmod 755 /system/.redpill
+  echo 1 > /system/.redpill/stweaks-installed
+fi
+
+# apply STweaks defaults
+/res/uci.sh apply
+
+# Scheduler Tweaks
+#mount -t debugfs none /sys/kernel/debug
+#echo "NO_GENTLE_FAIR_SLEEPERS" > /sys/kernel/debug/sched_features
+
+# FileSync Control (Disabled for better IO latency)
+#echo 1 > /sys/class/misc/fsynccontrol/fsync_enabled
+
 # Tweak cfq io scheduler
 #  for i in $(/sbin/busybox ls -1 /sys/block/mmc*)
 #  do echo "0" > $i/queue/rotational
@@ -190,43 +246,16 @@ fi
 #  done
 
 # Power savings
-echo "2" > /sys/devices/system/cpu/sched_mc_power_savings
-echo "3" > /sys/module/cpuidle_exynos4/parameters/enable_mask
-
-# Boost SD Cards
-chmod 777 /sys/block/mmcblk0/queue/read_ahead_kb
-echo "4096" > /sys/block/mmcblk0/queue/read_ahead_kb
-chmod 777 /sys/block/mmcblk1/queue/read_ahead_kb
-echo "4096" > /sys/block/mmcblk1/queue/read_ahead_kb
-chmod 777 /sys/devices/virtual/bdi/179:0/read_ahead_kb
-echo "4096" > /sys/devices/virtual/bdi/179:0/read_ahead_kb
+#echo "1" > /sys/devices/system/cpu/sched_mc_power_savings
+#echo "3" > /sys/module/cpuidle_exynos4/parameters/enable_mask
 
 # Set IO Scheduler (It's set to noop at boot)
-echo "sio" > /sys/block/mmcblk*/queue/scheduler
+#echo "sio" > /sys/block/mmcblk*/queue/scheduler
 
 # Run Init Scripts
-
 if [ -d /system/etc/init.d ]; then
   /sbin/busybox run-parts /system/etc/init.d
 fi
-
-# Backup EFS
-
-#if [ ! -f /data/.redpill/efsbackup.tar.gz ];
-#then
-#  mkdir /data/.redpill
-#  chmod 777 /data/.redpill
-#  /sbin/busybox tar zcvf /data/.redpill/efsbackup.tar.gz /efs
-#  /sbin/busybox cat /dev/block/mmcblk0p3 > /data/.redpill/efsdev-mmcblk0p3.img
-#  /sbin/busybox gzip /data/.redpill/efsdev-mmcblk0p3.img
-#  chmod 777 /data/.redpill/efsdev-mmcblk0p3.img
-#  chmod 777 /data/.redpill/efsbackup.tar.gz
-  #make sure that sdcard is mounted, media scanned..etc
-  #(
-  #  sleep 1000
-  #  /sbin/busybox cp /data/.redpill/efs* /storage/sdcard0
-  #) &
-#fi
 
 /sbin/busybox mount -t rootfs -o remount,ro rootfs
 mount -o remount,ro /system
