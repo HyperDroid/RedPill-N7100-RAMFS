@@ -1,0 +1,7 @@
+enable_mask=3
+sched_mc_power_savings=1
+scheduler=sio
+scaling_governor=pegasusq
+scaling_max_freq=1600000
+scaling_min_freq=400000
+fsync_enabled=0

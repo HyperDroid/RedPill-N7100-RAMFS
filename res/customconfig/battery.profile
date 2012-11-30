@@ -1,0 +1,7 @@
+enable_mask=3
+sched_mc_power_savings=2
+scheduler=deadline
+scaling_governor=conservative
+scaling_max_freq=1400000
+scaling_min_freq=200000
+fsync_enabled=1
