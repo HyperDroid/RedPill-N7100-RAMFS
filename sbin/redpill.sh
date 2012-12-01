@@ -10,8 +10,8 @@ then
   echo ${ccxmlsum} > /data/.redpill/.ccxmlsum
 fi
 [ ! -f /data/.redpill/default.profile ] && cp /res/customconfig/default.profile /data/.redpill
-[ ! -f /data/.redpill/battery.profile ] && cp /res/customconfig/battery.profile /data/.redpill
-[ ! -f /data/.redpill/performance.profile ] && cp /res/customconfig/performance.profile /data/.redpill
+[ ! -f /data/.redpill/battery.profile ] && cp /res/customconfig/battery.profile /data/.redpill/battery.profile
+[ ! -f /data/.redpill/performance.profile ] && cp /res/customconfig/performance.profile /data/.redpill/performance.profile
 
 . /res/customconfig/customconfig-helper
 read_defaults
@@ -19,6 +19,61 @@ read_config
 
 mount -o remount,rw /system
 /sbin/busybox mount -t rootfs -o remount,rw rootfs
+
+#Android Logger
+if [ "$logger" == "on" ];then
+insmod /lib/modules/logger.ko
+fi
+
+# Disable debugging on some modules
+if [ "$logger" == "off" ];then
+  rm -rf /dev/log
+  echo 0 > /sys/module/ump/parameters/ump_debug_level
+  echo 0 > /sys/module/mali/parameters/mali_debug_level
+  echo 0 > /sys/module/kernel/parameters/initcall_debug
+  echo 0 > /sys//module/lowmemorykiller/parameters/debug_level
+  echo 0 > /sys/module/wakelock/parameters/debug_mask
+  echo 0 > /sys/module/userwakelock/parameters/debug_mask
+  echo 0 > /sys/module/earlysuspend/parameters/debug_mask
+  echo 0 > /sys/module/alarm/parameters/debug_mask
+  echo 0 > /sys/module/alarm_dev/parameters/debug_mask
+  echo 0 > /sys/module/binder/parameters/debug_mask
+  echo 0 > /sys/module/xt_qtaguid/parameters/debug_mask
+fi
+
+#Install STweaks
+#echo "Checking if STweaks is installed"
+#stmd5sum=`/sbin/busybox md5sum /system/app/STweaks.apk | /sbin/busybox awk '{print $1}'`
+#if [ "$stmd5sum" == "0936a23cbcf1092be8fba4a8905fcd22" ];then
+#installstweaks=1
+#fi
+
+#if [ ! -f /system/.redpill/stweaks-installed ]; then
+#installstweaks=1
+#fi
+if [ ! -f /data/.redpill/stweaks-installed ];
+then
+cd /
+rm /system/app/STweaks.apk
+rm -f /data/app/com.gokhanmoral.STweaks*
+rm -f /data/dalvik-cache/*STweaks.*
+rm -f /data/app/com.gokhanmoral.stweaks*
+rm -f /data/dalvik-cache/*stweaks*
+
+cat /res/STweaks.apk > /system/app/STweaks.apk
+chown 0.0 /system/app/STweaks.apk
+chmod 644 /system/app/STweaks.apk
+mkdir /data/.redpill
+chmod 777 /data/.redpill
+echo "1" > /data/.redpill/stweaks-installed
+fi
+
+# NTFS automounting
+mount -o remount,rw /
+mkdir -p /mnt/ntfs
+chmod 777 /mnt/ntfs
+mount -o mode=0777,gid=1000 -t tmpfs tmpfs /mnt/ntfs
+mount -o remount,ro /
 
 # Enable dmesg
 if [ -e /proc/sys/kernel/dmesg_restrict ]; then
@@ -191,39 +246,14 @@ fi
 
 # Boost SD Cards
 chmod 777 /sys/block/mmcblk0/queue/read_ahead_kb
-echo "4096" > /sys/block/mmcblk0/queue/read_ahead_kb
+echo "2048" > /sys/block/mmcblk0/queue/read_ahead_kb
 chmod 777 /sys/block/mmcblk1/queue/read_ahead_kb
-echo "4096" > /sys/block/mmcblk1/queue/read_ahead_kb
+echo "2048" > /sys/block/mmcblk1/queue/read_ahead_kb
 chmod 777 /sys/devices/virtual/bdi/179:0/read_ahead_kb
-echo "4096" > /sys/devices/virtual/bdi/179:0/read_ahead_kb
-
-#Check if STweaks is installed
-echo "Checking if STweaks is installed"
-stmd5sum=`/sbin/busybox md5sum /system/app/STweaks.apk | /sbin/busybox awk '{print $1}'`
-if [ "$stmd5sum" == "0936a23cbcf1092be8fba4a8905fcd22" ];then
-installstweaks=1
-fi
-
-if [ ! -f /system/.redpill/stweaks-installed ]; then
-installstweaks=1
-fi
-
-if [ "$installstweaks" == "1" ];then
-  rm /system/app/STweaks.apk
-  rm -f /data/app/com.gokhanmoral.STweaks*
-  rm -f /data/dalvik-cache/*STweaks.*
-  rm -f /data/app/com.gokhanmoral.stweaks*
-  rm -f /data/dalvik-cache/*stweaks*
-
-  cat /res/STweaks.apk > /system/app/STweaks.apk
-  chown 0.0 /system/app/STweaks.apk
-  chmod 644 /system/app/STweaks.apk
-  mkdir /system/.redpill
-  chmod 755 /system/.redpill
-  echo 1 > /system/.redpill/stweaks-installed
-fi
+echo "2048" > /sys/devices/virtual/bdi/179:0/read_ahead_kb
 
 # apply STweaks defaults
+sleep 5
 /res/uci.sh apply
 
 # Scheduler Tweaks
