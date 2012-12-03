@@ -6,6 +6,7 @@ scaling_max_freq=1600000
 scaling_min_freq=400000
 fsync_enabled=0
 logger=on
+scoobydoo=off
 headphone_amplifier_level=57
 fll_tuning=1
 dac_direct=0
