@@ -42,15 +42,6 @@ if [ "$logger" == "off" ];then
 fi
 
 #Install STweaks
-#echo "Checking if STweaks is installed"
-#stmd5sum=`/sbin/busybox md5sum /system/app/STweaks.apk | /sbin/busybox awk '{print $1}'`
-#if [ "$stmd5sum" == "0936a23cbcf1092be8fba4a8905fcd22" ];then
-#installstweaks=1
-#fi
-
-#if [ ! -f /system/.redpill/stweaks-installed ]; then
-#installstweaks=1
-#fi
 if [ ! -f /data/.redpill/stweaks-installed ];
 then
 cd /
@@ -253,34 +244,7 @@ chmod 777 /sys/devices/virtual/bdi/179:0/read_ahead_kb
 echo "2048" > /sys/devices/virtual/bdi/179:0/read_ahead_kb
 
 # apply STweaks defaults
-sleep 5
 /res/uci.sh apply
-
-# Scheduler Tweaks
-#mount -t debugfs none /sys/kernel/debug
-#echo "NO_GENTLE_FAIR_SLEEPERS" > /sys/kernel/debug/sched_features
-
-# FileSync Control (Disabled for better IO latency)
-#echo 1 > /sys/class/misc/fsynccontrol/fsync_enabled
-
-# Tweak cfq io scheduler
-#  for i in $(/sbin/busybox ls -1 /sys/block/mmc*)
-#  do echo "0" > $i/queue/rotational
-#    echo "0" > $i/queue/iostats
-#   echo "1" > $i/queue/iosched/group_isolation
-#    echo "8" > $i/queue/iosched/quantum
-#    echo "1" > $i/queue/iosched/low_latency
-#    echo "5" > $i/queue/iosched/slice_idle
-#    echo "2" > $i/queue/iosched/back_seek_penalty
-#    echo "1000000000" > $i/queue/iosched/back_seek_max
-#  done
-
-# Power savings
-#echo "1" > /sys/devices/system/cpu/sched_mc_power_savings
-#echo "3" > /sys/module/cpuidle_exynos4/parameters/enable_mask
-
-# Set IO Scheduler (It's set to noop at boot)
-#echo "sio" > /sys/block/mmcblk*/queue/scheduler
 
 # Run Init Scripts
 if [ -d /system/etc/init.d ]; then
