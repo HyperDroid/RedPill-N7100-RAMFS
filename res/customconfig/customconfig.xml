@@ -34,9 +34,10 @@
   <settingsTab name="I/O">
     <settingsPane description="I/O Settings" name="I/O Settings">
       <spinner description="This will set the default I/O scheduler. Default I/O scheduler will only be set during early stages of booting (before init.d execution) and can be overriden by later scripts or apps. Deadline and SIO are both tweaked for a bias towards latency on flash based storage." name="Default I/O Scheduler" action="generic /sys/block/mmcblk0/queue/scheduler">
-             <spinnerItem name="sio" value="sio"/>
              <spinnerItem name="deadline" value="deadline"/>
              <spinnerItem name="noop" value="noop"/>
+             <spinnerItem name="sio" value="sio"/>
+             <spinnerItem name="zen" value="zen"/>
       </spinner>
       <spinner description="This is enabled by default to ensure the integrity of the files during I/O operations. Disabling it may give you a boost in I/O throughput at the expense of stability. You have been warned! That said, we don't expect any crashes and even if we do get one the bias towards latency + the tweaked mount options ensure you lose only 1 second worth of data at most." name="FSync Control" action="generic /sys/class/misc/fsynccontrol/fsync_enabled">
              <spinnerItem name="FSync Enabled (default)" value="1"/>
@@ -46,7 +47,6 @@
   </settingsTab>
 
   <settingsTab name="Audio">
-      <checkbox description="Enable or Disable Scoobydoo Sound (needs a reboot to take effect)" name="Scoobydoo Sound" action="generic /tmp/scoobydoo" label="Scoobydoo Sound"/>
     <settingsPane description="Speaker Tuning Settings" name="Speaker Tuning">
       <checkbox description="Enable speaker tuning for better bass response on main speakers" name="Speaker Tuning" action="generic01 /sys/class/misc/scoobydoo_sound/speaker_tuning" label="Speaker Tuning"/>
       <seekBar description="Speaker Amplification Offset. 0 means stock value. Having too much amplification may cause distortion."
