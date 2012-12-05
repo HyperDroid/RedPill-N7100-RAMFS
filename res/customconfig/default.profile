@@ -25,3 +25,4 @@ speaker_offset=0
 speaker_tuning=off
 speaker_tuning_level=44
 led_fade=-1
+CONTROLSWITCH_CPU=off
