@@ -80,7 +80,7 @@ echo "1600000" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
 
 # Pegasusq Governor Tweaks
 echo "75" > /sys/devices/system/cpu/cpufreq/pegasusq/up_threshold
-echo "30000" > /sys/devices/system/cpu/cpufreq/pegasusq/sampling_rate
+echo "20000" > /sys/devices/system/cpu/cpufreq/pegasusq/sampling_rate
 echo "2" > /sys/devices/system/cpu/cpufreq/pegasusq/sampling_down_factor
 echo "5" > /sys/devices/system/cpu/cpufreq/pegasusq/down_differential
 echo "50" > /sys/devices/system/cpu/cpufreq/pegasusq/freq_step
@@ -244,7 +244,10 @@ chmod 777 /sys/devices/virtual/bdi/179:0/read_ahead_kb
 echo "2048" > /sys/devices/virtual/bdi/179:0/read_ahead_kb
 
 # apply STweaks defaults
+sleep 15
+export CONFIG_BOOTING=1
 /res/uci.sh apply
+export CONFIG_BOOTING=
 
 # Run Init Scripts
 if [ -d /system/etc/init.d ]; then
