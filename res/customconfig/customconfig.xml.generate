@@ -79,6 +79,7 @@ done
   </settingsTab>
 
   <settingsTab name="I/O">
+    <settingsPane description="I/O Settings" name="I/O Settings">
       <spinner description="This will set the default I/O scheduler. Default I/O scheduler will only be set during early stages of booting (before init.d execution) and can be overriden by later scripts or apps." name="Default I/O Scheduler" action="generic /sys/block/mmcblk0/queue/scheduler">
 `#Start I/O Scheduler dynamic block
 for IOSCHED in \`cat /sys/block/mmcblk0/queue/scheduler|sed -e 's/\]//;s/\[//'\`;
