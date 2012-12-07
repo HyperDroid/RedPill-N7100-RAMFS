@@ -53,7 +53,7 @@ done
   </settingsTab>
   <settingsTab name="CPU_UV">
 
-    <settingsPane description="Apply the settings on boot only if the desired settings prove to be stable, else the device ends up in a boot-loop. If turned off, the displayed values do not correspond the current live values but the saved profile values, some inconsistencies may occur on applying."
+    <settingsPane description="Apply the settings on boot only if the desired settings prove to be stable, else the device ends up in a boot-loop. If turned off, the displayed values do not correspond to the current live values but the saved profile values. Some inconsistencies may occur on applying."
                   name="CPU control switch">
       <checkbox description="If enabled, the below settings will be applied at boot."
                 name="Set CPU settings on boot"
@@ -61,7 +61,7 @@ done
                 label="Set on boot"/>
     </settingsPane>
 
-    <settingsPane description="Decreasing voltage will lower power consumption of the CPU. Increasing it on overclocked frequencies improves stability. Too low voltage may cause instabilities and freezes."
+    <settingsPane description="Decreasing voltage will lower power consumption of the CPU. Increasing it on overclocked frequencies improves stability. Too low a voltage may cause instabilities and freezes."
                   name="CPU voltage control">
 
 `
@@ -170,6 +170,8 @@ done
     <settingsPane description="Misc Settings" name="Misc Settings">
       <button description="Back up the EFS partition. If you don't have a current backup I highly recommend to perform one as the risk of NOT having an EFS backup can be disastrous. This will create 2 backups in your /sdcard directory: efsbackup.tar.gz and efsdev-mmcblk0p3.img.gz (The former being a tar.gz of the entire /efs partition; the latter being an exact copy o the /efs partition in .img which is then gzipped to save space). If you ever need to restore your /efs any of the available tools to do so can use either of the 2 backups. Better safe than sorry." name="Backup EFS" action="efs-backup" label="Backup EFS"/>
       <checkbox description="Enable or Disable Android Logger (needs a reboot to take effect)" name="Android Logger" action="generic /tmp/logger" label="Android Logger"/>
+      <checkbox description="Enable or Disable Using your ExFAT formatted ExtSdCard as the Internal SD Card. Thanks to Mattiadj of XDA for the idea and script. This version for the N7100 was tweaked and fully tested by pongster. (Please make sure your ExtSdCard is ExFAT formatted AND reboot to enable the tweak to take effect)" name="ExFAT as Internal" action="generic /tmp/ext2intexfat" label="ExFAT as Internal"/>
+      <checkbox description="Enable or Disable Using your FAT32 formatted ExtSdCard as the Internal SD Card. Thanks to Mattiadj of XDA for the idea and script. This version for the N7100 was tweaked and fully tested by pongster. (Please make sure your ExtSdCard is FAT32 formatted AND reboot to enable the tweak to take effect)" name="FAT32 as Internal" action="generic /tmp/ext2intfat" label="FAT32 as Internal"/>
       <spinner description="Notification LED Behavior" name="Notification LED Behavior" action="generic /sys/devices/virtual/sec/led/led_fade">
              <spinnerItem name="ROM default" value="-1"/>
              <spinnerItem name="Blinking" value="0"/>

@@ -20,7 +20,7 @@ read_config
 mount -o remount,rw /system
 /sbin/busybox mount -t rootfs -o remount,rw rootfs
 
-#Android Logger
+# Android Logger
 if [ "$logger" == "on" ];then
 insmod /lib/modules/logger.ko
 fi
@@ -41,7 +41,7 @@ if [ "$logger" == "off" ];then
   echo 0 > /sys/module/xt_qtaguid/parameters/debug_mask
 fi
 
-#Install STweaks
+# Install STweaks
 if [ ! -f /data/.redpill/stweaks-installed ];
 then
 cd /
@@ -65,6 +65,31 @@ mkdir -p /mnt/ntfs
 chmod 777 /mnt/ntfs
 mount -o mode=0777,gid=1000 -t tmpfs tmpfs /mnt/ntfs
 mount -o remount,ro /
+
+# ExtSdCard as Internal (For those Using 64GB ExFAT and Have a LOT of Apps)
+# Thanks to Mattiadj of XDA for the idea and script
+# Tweaked and Fully Tested by pongster to work on N7100
+if [ "$ext2intexfat" == "on" ];then
+sleep 2
+mount -o remount,rw /
+mount -t exfat -o umask=0000 /dev/block/vold/179:49 /storage/sdcard0
+sleep 2
+mount -o bind /data/media /storage/extSdCard
+chmod 770 /storage/extSdCard
+chown 1023:1023 /storage/extSdCard
+chown 1000:1000 /storage/sdcard0
+fi
+
+if [ "$ext2intfat" == "on" ];then
+sleep 2
+mount -o remount,rw /
+mount -t vfat -o umask=0000 /dev/block/vold/179:49 /storage/sdcard0
+sleep 2
+mount -o bind /data/media /storage/extSdCard
+chmod 770 /storage/extSdCard
+chown 1023:1023 /storage/extSdCard
+chown 1000:1000 /storage/sdcard0
+fi
 
 # Enable dmesg
 if [ -e /proc/sys/kernel/dmesg_restrict ]; then
