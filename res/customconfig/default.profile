@@ -45,3 +45,4 @@ speaker_tuning_level=44
 led_fade=-1
 ext2intexfat=off
 ext2intfat=off
+dmesg_restrict=1

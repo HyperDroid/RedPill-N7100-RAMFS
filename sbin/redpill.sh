@@ -92,9 +92,9 @@ chown 1000:1000 /storage/sdcard0
 fi
 
 # Enable dmesg
-if [ -e /proc/sys/kernel/dmesg_restrict ]; then
-        echo "0" > /proc/sys/kernel/dmesg_restrict
-fi
+#if [ -e /proc/sys/kernel/dmesg_restrict ]; then
+#        echo "0" > /proc/sys/kernel/dmesg_restrict
+#fi
 
 # Mount Tweaks
 mount -o noatime,remount,ro,discard,barrier=0,commit=1,noauto_da_alloc,delalloc /system /system;
