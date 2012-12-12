@@ -72,7 +72,7 @@ mount -o remount,ro /
 if [ "$ext2intexfat" == "on" ];then
 sleep 2
 mount -o remount,rw /
-mount -t exfat -o umask=0000 /dev/block/vold/179:49 /storage/sdcard0
+mount -t exfat -o umask=0000,nosuid,nodev,noexec,noatime,nodiratime /dev/block/vold/179:49 /storage/sdcard0
 sleep 2
 mount -o bind /data/media /storage/extSdCard
 chmod 770 /storage/extSdCard
@@ -83,7 +83,7 @@ fi
 if [ "$ext2intfat" == "on" ];then
 sleep 2
 mount -o remount,rw /
-mount -t vfat -o umask=0000 /dev/block/vold/179:49 /storage/sdcard0
+mount -t vfat -o umask=0000,nosuid,nodev,noexec,noatime,nodiratime /dev/block/vold/179:49 /storage/sdcard0
 sleep 2
 mount -o bind /data/media /storage/extSdCard
 chmod 770 /storage/extSdCard
