@@ -65,7 +65,7 @@ fi
 if [ "$ext2intexfat" == "on" ];then
 sleep 1
 mount -o remount,rw /
-mount -t exfat -o umask=0000,rw,noatime,nosuid,nodev,noexec /dev/block/vold/179:49 /storage/sdcard0
+mount -t exfat -o umask=0000,rw,nosuid,nodev,noexec /dev/block/vold/179:49 /storage/sdcard0
 sleep 1
 mount -o bind /data/media /storage/extSdCard
 chmod 770 /storage/extSdCard
@@ -76,7 +76,7 @@ fi
 if [ "$ext2intfat" == "on" ];then
 sleep 1
 mount -o remount,rw /
-mount -t vfat -o umask=0000,rw,noatime,nosuid,nodev,noexec /dev/block/vold/179:49 /storage/sdcard0
+mount -t vfat -o umask=0000,rw,nosuid,nodev,noexec /dev/block/vold/179:49 /storage/sdcard0
 sleep 1
 mount -o bind /data/media /storage/extSdCard
 chmod 770 /storage/extSdCard
@@ -249,27 +249,8 @@ echo "2048" > /sys/block/mmcblk1/queue/read_ahead_kb
 chmod 777 /sys/devices/virtual/bdi/179:0/read_ahead_kb
 echo "2048" > /sys/devices/virtual/bdi/179:0/read_ahead_kb
 
-# Remount all partitions with noatime
-for k in $(/sbin/busybox mount | /sbin/busybox grep relatime | /sbin/busybox cut -d " " -f3)
-do
-      #sync
-      /sbin/busybox mount -o remount,noatime $k
-done
-
-# Remount ext4 partitions with optimizations
-for k in $(/sbin/busybox mount | /sbin/busybox grep ext4 | /sbin/busybox cut -d " " -f3)
-do
-      #sync
-      /sbin/busybox mount -o remount,barrier=0,commit=30,data=writeback $k
-done
-  
-# Mount Tweaks
-mount -o noatime,remount,ro,discard,barrier=0,commit=30,noauto_da_alloc,delalloc /system /system;
-mount -o noatime,remount,rw,discard,barrier=0,commit=30,noauto_da_alloc,delalloc /cache /cache;
-mount -o noatime,remount,rw,discard,barrier=0,commit=30,noauto_da_alloc,delalloc /data /data;
-
 # apply STweaks defaults
-sleep 10
+sleep 15
 export CONFIG_BOOTING=1
 /res/uci.sh apply
 export CONFIG_BOOTING=
@@ -280,4 +261,4 @@ if [ -d /system/etc/init.d ]; then
 fi
 
 /sbin/busybox mount -t rootfs -o remount,ro rootfs
-#mount -o remount,ro /system
+mount -o remount,ro /system
