@@ -60,32 +60,36 @@ echo "1" > /data/.redpill/stweaks-installed
 fi
 
 # NTFS automounting
-mount -o remount,rw /
-mkdir -p /mnt/ntfs
-chmod 777 /mnt/ntfs
-mount -o mode=0777,gid=1000 -t tmpfs tmpfs /mnt/ntfs
-mount -o remount,ro /
+#mount -o remount,rw /
+#mkdir -p /mnt/ntfs
+#chmod 777 /mnt/ntfs
+#mount -o mode=0777,gid=1000 -t tmpfs tmpfs /mnt/ntfs
+#mount -o remount,ro /
 
 # ExtSdCard as Internal (For those Using 64GB ExFAT and Have a LOT of Apps)
 # Thanks to Mattiadj of XDA for the idea and script
 # Tweaked and Fully Tested by pongster to work on N7100
 if [ "$ext2intexfat" == "on" ];then
-sleep 2
+sleep 1
 mount -o remount,rw /
-mount -t exfat -o umask=0000,nosuid,nodev,noexec,noatime,nodiratime /dev/block/vold/179:49 /storage/sdcard0
-sleep 2
+mount -t exfat -o umask=0000,nosuid,nodev,noexec /dev/block/vold/179:49 /storage/sdcard0
+mount -o remount,rw,noatime /storage/sdcard0
+sleep 1
 mount -o bind /data/media /storage/extSdCard
+mount -o remount,rw,noatime,data=writeback /storage/extSdCard
 chmod 770 /storage/extSdCard
 chown 1023:1023 /storage/extSdCard
 chown 1000:1000 /storage/sdcard0
 fi
 
 if [ "$ext2intfat" == "on" ];then
-sleep 2
+sleep 1
 mount -o remount,rw /
-mount -t vfat -o umask=0000,nosuid,nodev,noexec,noatime,nodiratime /dev/block/vold/179:49 /storage/sdcard0
-sleep 2
+mount -t vfat -o umask=0000,nosuid,nodev,noexec /dev/block/vold/179:49 /storage/sdcard0
+mount -o remount,rw,noatime /storage/sdcard0
+sleep 1
 mount -o bind /data/media /storage/extSdCard
+mount -o remount,rw,noatime,data=writeback /storage/extSdCard
 chmod 770 /storage/extSdCard
 chown 1023:1023 /storage/extSdCard
 chown 1000:1000 /storage/sdcard0
@@ -97,11 +101,11 @@ fi
 #fi
 
 # Mount Tweaks
-mount -o noatime,remount,ro,discard,barrier=0,commit=1,noauto_da_alloc,delalloc /system /system;
-mount -o noatime,remount,rw,discard,barrier=0,commit=1,noauto_da_alloc,delalloc /data /data;
+mount -o remount,ro,noatime,discard,barrier=0,commit=30,data=writeback,noauto_da_alloc,delalloc /system /system;
+mount -o remount,rw,noatime,discard,barrier=0,commit=30,data=writeback,noauto_da_alloc,delalloc /data /data;
 
 # SetCPU Min and Max Freq
-echo "1600000" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+#echo "1600000" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
 
 # Pegasusq Governor Tweaks
 echo "75" > /sys/devices/system/cpu/cpufreq/pegasusq/up_threshold
