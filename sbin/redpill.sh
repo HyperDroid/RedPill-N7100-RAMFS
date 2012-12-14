@@ -59,24 +59,15 @@ chmod 777 /data/.redpill
 echo "1" > /data/.redpill/stweaks-installed
 fi
 
-# NTFS automounting
-#mount -o remount,rw /
-#mkdir -p /mnt/ntfs
-#chmod 777 /mnt/ntfs
-#mount -o mode=0777,gid=1000 -t tmpfs tmpfs /mnt/ntfs
-#mount -o remount,ro /
-
 # ExtSdCard as Internal (For those Using 64GB ExFAT and Have a LOT of Apps)
 # Thanks to Mattiadj of XDA for the idea and script
 # Tweaked and Fully Tested by pongster to work on N7100
 if [ "$ext2intexfat" == "on" ];then
 sleep 1
 mount -o remount,rw /
-mount -t exfat -o umask=0000,nosuid,nodev,noexec /dev/block/vold/179:49 /storage/sdcard0
-mount -o remount,rw,noatime /storage/sdcard0
+mount -t exfat -o umask=0000,rw,noatime,nosuid,nodev,noexec /dev/block/vold/179:49 /storage/sdcard0
 sleep 1
 mount -o bind /data/media /storage/extSdCard
-mount -o remount,rw,noatime,data=writeback /storage/extSdCard
 chmod 770 /storage/extSdCard
 chown 1023:1023 /storage/extSdCard
 chown 1000:1000 /storage/sdcard0
@@ -85,27 +76,13 @@ fi
 if [ "$ext2intfat" == "on" ];then
 sleep 1
 mount -o remount,rw /
-mount -t vfat -o umask=0000,nosuid,nodev,noexec /dev/block/vold/179:49 /storage/sdcard0
-mount -o remount,rw,noatime /storage/sdcard0
+mount -t vfat -o umask=0000,rw,noatime,nosuid,nodev,noexec /dev/block/vold/179:49 /storage/sdcard0
 sleep 1
 mount -o bind /data/media /storage/extSdCard
-mount -o remount,rw,noatime,data=writeback /storage/extSdCard
 chmod 770 /storage/extSdCard
 chown 1023:1023 /storage/extSdCard
 chown 1000:1000 /storage/sdcard0
 fi
-
-# Enable dmesg
-#if [ -e /proc/sys/kernel/dmesg_restrict ]; then
-#        echo "0" > /proc/sys/kernel/dmesg_restrict
-#fi
-
-# Mount Tweaks
-mount -o remount,ro,noatime,discard,barrier=0,commit=30,data=writeback,noauto_da_alloc,delalloc /system /system;
-mount -o remount,rw,noatime,discard,barrier=0,commit=30,data=writeback,noauto_da_alloc,delalloc /data /data;
-
-# SetCPU Min and Max Freq
-#echo "1600000" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
 
 # Pegasusq Governor Tweaks
 echo "75" > /sys/devices/system/cpu/cpufreq/pegasusq/up_threshold
@@ -272,8 +249,27 @@ echo "2048" > /sys/block/mmcblk1/queue/read_ahead_kb
 chmod 777 /sys/devices/virtual/bdi/179:0/read_ahead_kb
 echo "2048" > /sys/devices/virtual/bdi/179:0/read_ahead_kb
 
+# Remount all partitions with noatime
+for k in $(/sbin/busybox mount | /sbin/busybox grep relatime | /sbin/busybox cut -d " " -f3)
+do
+      #sync
+      /sbin/busybox mount -o remount,noatime $k
+done
+
+# Remount ext4 partitions with optimizations
+for k in $(/sbin/busybox mount | /sbin/busybox grep ext4 | /sbin/busybox cut -d " " -f3)
+do
+      #sync
+      /sbin/busybox mount -o remount,barrier=0,commit=30,data=writeback $k
+done
+  
+# Mount Tweaks
+mount -o noatime,remount,ro,discard,barrier=0,commit=30,noauto_da_alloc,delalloc /system /system;
+mount -o noatime,remount,rw,discard,barrier=0,commit=30,noauto_da_alloc,delalloc /cache /cache;
+mount -o noatime,remount,rw,discard,barrier=0,commit=30,noauto_da_alloc,delalloc /data /data;
+
 # apply STweaks defaults
-sleep 15
+sleep 10
 export CONFIG_BOOTING=1
 /res/uci.sh apply
 export CONFIG_BOOTING=
@@ -284,4 +280,4 @@ if [ -d /system/etc/init.d ]; then
 fi
 
 /sbin/busybox mount -t rootfs -o remount,ro rootfs
-mount -o remount,ro /system
+#mount -o remount,ro /system
