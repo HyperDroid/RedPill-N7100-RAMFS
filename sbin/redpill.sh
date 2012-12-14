@@ -68,6 +68,7 @@ mount -o remount,rw /
 mount -t exfat -o umask=0000,rw,nosuid,nodev,noexec /dev/block/vold/179:49 /storage/sdcard0
 sleep 1
 mount -o bind /data/media /storage/extSdCard
+mount -o remount,noatime,nosuid,nodev,discard,noauto_da_alloc,commit=60,barrier=0,data=writeback /storage/extSdCard
 chmod 770 /storage/extSdCard
 chown 1023:1023 /storage/extSdCard
 chown 1000:1000 /storage/sdcard0
@@ -79,6 +80,7 @@ mount -o remount,rw /
 mount -t vfat -o umask=0000,rw,nosuid,nodev,noexec /dev/block/vold/179:49 /storage/sdcard0
 sleep 1
 mount -o bind /data/media /storage/extSdCard
+mount -o remount,noatime,nosuid,nodev,discard,noauto_da_alloc,commit=60,barrier=0,data=writeback /storage/extSdCard
 chmod 770 /storage/extSdCard
 chown 1023:1023 /storage/extSdCard
 chown 1000:1000 /storage/sdcard0
