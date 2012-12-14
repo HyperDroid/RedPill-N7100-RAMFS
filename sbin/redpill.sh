@@ -68,7 +68,7 @@ mount -o remount,rw /
 mount -t exfat -o umask=0000,rw,nosuid,nodev,noexec /dev/block/vold/179:49 /storage/sdcard0
 sleep 1
 mount -o bind /data/media /storage/extSdCard
-mount -o remount,noatime,nosuid,nodev,discard,noauto_da_alloc,commit=60,barrier=0,data=writeback /storage/extSdCard
+mount -o remount,noatime,nosuid,nodev,discard,noauto_da_alloc,commit=60,barrier=0,errors=panic /storage/extSdCard
 chmod 770 /storage/extSdCard
 chown 1023:1023 /storage/extSdCard
 chown 1000:1000 /storage/sdcard0
@@ -80,15 +80,16 @@ mount -o remount,rw /
 mount -t vfat -o umask=0000,rw,nosuid,nodev,noexec /dev/block/vold/179:49 /storage/sdcard0
 sleep 1
 mount -o bind /data/media /storage/extSdCard
-mount -o remount,noatime,nosuid,nodev,discard,noauto_da_alloc,commit=60,barrier=0,data=writeback /storage/extSdCard
+mount -o remount,noatime,nosuid,nodev,discard,noauto_da_alloc,commit=60,barrier=0,errors=panic /storage/extSdCard
 chmod 770 /storage/extSdCard
 chown 1023:1023 /storage/extSdCard
 chown 1000:1000 /storage/sdcard0
 fi
 
 # Mount Tweaks
-mount -o noatime,remount,ro,discard,barrier=0,commit=60,data=writeback,noauto_da_alloc /system /system;
-mount -o noatime,remount,rw,discard,barrier=0,commit=60,data=writeback,noauto_da_alloc /data /data;
+mount -o noatime,remount,ro,discard,barrier=0,commit=60,noauto_da_alloc /system /system;
+mount -o noatime,remount,rw,nosuid,nodev,barrier=0,commit=60,errors=panic /cache /cache;
+mount -o noatime,remount,rw,nosuid,nodev,discard,barrier=0,commit=60,noauto_da_alloc,errors=panic /data /data;
 
 # Pegasusq Governor Tweaks
 echo "75" > /sys/devices/system/cpu/cpufreq/pegasusq/up_threshold
@@ -256,7 +257,7 @@ chmod 777 /sys/devices/virtual/bdi/179:0/read_ahead_kb
 echo "2048" > /sys/devices/virtual/bdi/179:0/read_ahead_kb
 
 # apply STweaks defaults
-sleep 15
+sleep 5
 export CONFIG_BOOTING=1
 /res/uci.sh apply
 export CONFIG_BOOTING=
