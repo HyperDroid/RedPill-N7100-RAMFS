@@ -88,10 +88,13 @@ echo '             <spinnerItem name="'$IOSCHED'" value="'$IOSCHED'"/>'
 done
 #End I/O Scheduler dynamic block`
       </spinner>
+    <settingsPane description="FSync Control Settings" name="FSync Control">
+      <checkbox description="Dynamic FSync is enabled by default to ensure the integrity of the files during I/O operations. When the screen is off and FSync is Enabled (default), FSync will happen during Suspend. Disabling Dynamic FSync along with FSync Enabled below means FSync will happen whether the screen is on or off. This ensures the highest level of data integrity at the cost of speed. Disabling Dynamic FSync and having FSync Disabled below completely disable FSync even if your screen is off. This gives you the best I/O speed possible at the cost of data integrity. If the system crashes you'll lose up to 1 second of data at most." name="Dynamic FSync" action="generic /sys/kernel/dyn_fsync/Dyn_fsync_active" label="Dynamic FSync"/>
       <spinner description="Dynamic FSync is enabled by default to ensure the integrity of the files during I/O operations. When the screen is off and FSync is Enabled (default), FSync will happen. If FSync is disabled here Dynamic FSync will respect your choice to disable FSync completely. Please remember that disabling it may give you a boost in I/O throughput at the expense of stability. You have been warned! That said, we don't expect any crashes and even if we do get one the bias towards latency + the tweaked mount options ensure you lose only 1 second worth of data at most." name="FSync Control" action="generic /sys/class/misc/fsynccontrol/fsync_enabled">
              <spinnerItem name="FSync Enabled (default)" value="1"/>
              <spinnerItem name="FSync Disabled" value="0"/>
       </spinner>
+    </settingsPane>
     </settingsPane>
   </settingsTab>
 

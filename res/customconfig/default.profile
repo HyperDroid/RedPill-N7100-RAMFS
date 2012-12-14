@@ -22,6 +22,7 @@ scheduler=zen
 scaling_governor=pegasusq
 scaling_max_freq=1600000
 scaling_min_freq=200000
+Dyn_fsync_active=1
 fsync_enabled=1
 logger=on
 headphone_amplifier_level=55
