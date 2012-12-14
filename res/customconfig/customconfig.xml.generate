@@ -88,7 +88,7 @@ echo '             <spinnerItem name="'$IOSCHED'" value="'$IOSCHED'"/>'
 done
 #End I/O Scheduler dynamic block`
       </spinner>
-      <spinner description="This is enabled by default to ensure the integrity of the files during I/O operations. Disabling it may give you a boost in I/O throughput at the expense of stability. You have been warned! That said, we don't expect any crashes and even if we do get one the bias towards latency + the tweaked mount options ensure you lose only 1 second worth of data at most." name="FSync Control" action="generic /sys/class/misc/fsynccontrol/fsync_enabled">
+      <spinner description="Dynamic FSync is enabled by default to ensure the integrity of the files during I/O operations. When the screen is off and FSync is Enabled (default), FSync will happen. If FSync is disabled here Dynamic FSync will respect your choice to disable FSync completely. Please remember that disabling it may give you a boost in I/O throughput at the expense of stability. You have been warned! That said, we don't expect any crashes and even if we do get one the bias towards latency + the tweaked mount options ensure you lose only 1 second worth of data at most." name="FSync Control" action="generic /sys/class/misc/fsynccontrol/fsync_enabled">
              <spinnerItem name="FSync Enabled (default)" value="1"/>
              <spinnerItem name="FSync Disabled" value="0"/>
       </spinner>
