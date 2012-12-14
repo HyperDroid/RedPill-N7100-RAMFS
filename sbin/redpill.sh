@@ -86,6 +86,10 @@ chown 1023:1023 /storage/extSdCard
 chown 1000:1000 /storage/sdcard0
 fi
 
+# Mount Tweaks
+mount -o noatime,remount,ro,discard,barrier=0,commit=60,noauto_da_alloc /system /system;
+mount -o noatime,remount,rw,discard,barrier=0,commit=60,noauto_da_alloc /data /data;
+
 # Pegasusq Governor Tweaks
 echo "75" > /sys/devices/system/cpu/cpufreq/pegasusq/up_threshold
 echo "20000" > /sys/devices/system/cpu/cpufreq/pegasusq/sampling_rate
