@@ -265,7 +265,7 @@ chmod 777 /sys/devices/virtual/bdi/179:0/read_ahead_kb
 echo "2048" > /sys/devices/virtual/bdi/179:0/read_ahead_kb
 
 # apply STweaks defaults
-sleep 5
+sleep 20
 export CONFIG_BOOTING=1
 /res/uci.sh apply
 export CONFIG_BOOTING=
