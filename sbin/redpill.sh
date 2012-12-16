@@ -86,6 +86,14 @@ chown 1023:1023 /storage/extSdCard
 chown 1000:1000 /storage/sdcard0
 fi
 
+# Remount all partitions with noatime
+mount -o remount,rw /
+for k in $(/sbin/busybox mount | /sbin/busybox grep relatime | /sbin/busybox cut -d " " -f3)
+do
+#      sync
+      /sbin/busybox mount -o remount,noatime $k
+done
+
 # Mount Tweaks
 mount -o noatime,remount,ro,discard,barrier=0,commit=1,noauto_da_alloc /system /system;
 mount -o noatime,remount,rw,nosuid,nodev,barrier=0,commit=1,errors=panic /cache /cache;
