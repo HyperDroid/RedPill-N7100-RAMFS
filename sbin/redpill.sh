@@ -21,14 +21,14 @@ mount -o remount,rw /system
 /sbin/busybox mount -t rootfs -o remount,rw rootfs
 
 #Exynos-Abuse Workaround for 4.1.2 Firmware (Thanks to alephzain for finding the exploit)
-camsum=`md5sum /system/lib/hw/camera.smdk4x12.so | awk '{print $1}'`
-if [ "a${camsum}" != "a`915b79b73d16da288eb0f201c6866143`" ];
-then
-rm -f /system/lib/hw/camera.smdk4x12.so
-cp /res/camera.smdk4x12.so /system/lib/hw/camera.smdk4x12.so
-chmod 644 /system/lib/hw/camera.smdk4x12.so
-chown 0:0 /system/lib/hw/camera.smdk4x12.so
-fi
+#camsum=`md5sum /system/lib/hw/camera.smdk4x12.so | awk '{print $1}'`
+#if [ "a${camsum}" != "a`915b79b73d16da288eb0f201c6866143`" ];
+#then
+#rm -f /system/lib/hw/camera.smdk4x12.so
+#cp /res/camera.smdk4x12.so /system/lib/hw/camera.smdk4x12.so
+#chmod 644 /system/lib/hw/camera.smdk4x12.so
+#chown 0:0 /system/lib/hw/camera.smdk4x12.so
+#fi
 
 # Android Logger
 if [ "$logger" == "on" ];then
