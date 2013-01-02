@@ -1,112 +1,390 @@
 #!/sbin/busybox sh
 
-cat << ENDCONFIG
-<settingsRoot>
+XML=$CONFIG_XML
+
+echo "" > $XML
+
+echo '
+<settingsRoot>' >> $XML
+
+echo '
   <settingsTab name="CPU">
-    <settingsPane description=""
-		name="CPU Idle and Power Settings">
-      <spinner description="Sets the CPU Idle Mode. AFTR+LPA is the default on RedPill and best for the battery life but if you have problems try Idle+LPA." name="CPU Idle Mode" action="generic /sys/module/cpuidle_exynos4/parameters/enable_mask">
-             <spinnerItem name="AFTR + LPA (default)" value="3"/>
-             <spinnerItem name="Idle + LPA" value="2"/>
-             <spinnerItem name="AFTR only" value="1"/>
-             <spinnerItem name="Idle only" value="0"/>
-      </spinner>
-      <seekBar description="Sets the sched_mc value which changes the cpu scheduler behaviour for multi-cpu systems. 0 is Samsung kernel's default value which turns sched_mc off. Setting it to 1 means that the first core will be tried to be loaded more and setting it to 2 will bias task wake-ups to semi-idle cpu package for power savings. (default: 1)"
-            name="sched_mc" action="generic /sys/devices/system/cpu/sched_mc_power_savings" unit="" min="0" reversed="false" step="1" max="2"/>
-    </settingsPane>
 
-    <settingsPane description=""
-		name="CPU Scaling Settings">
-       <spinner description="Sets the number of CPUs to be used in hotplugging. (Works only when pegasusq is selected as the default CPU governor)" name="Max CPU Lock" action="max-cpu-lock">
-             <spinnerItem name="Quad core mode (unlocked,default)" value="0"/>
-             <spinnerItem name="Triple core mode" value="3"/>
-             <spinnerItem name="Dual core mode" value="2"/>
-             <spinnerItem name="Single core mode" value="1"/>
-       </spinner>
-      <spinner description="This will set the default CPU governor. Default CPU governor will only be set during early stages of booting (before init.d execution) and can be overriden by later scripts or apps. I've tried making the choice as simple as possible." name="Default CPU Governor" action="generic /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor">
-             <spinnerItem name="pegasusq" value="pegasusq"/>
-             <spinnerItem name="conservative" value="conservative"/>
-      </spinner>
-      <spinner description="Set the maximum frequency the CPU scales up to. Default: `expr \`cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq\` / 1000` MHz."
-               name="CPU max frequency"
-               action="generic /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq">"
-`
-cat /sys/devices/system/cpu/cpu0/cpufreq/UV_uV_table | \
-sed -e 's/mhz//g;s/://g' | awk '{ print $1, $2 }' | \
-while read FREQ UVOLT; do
-  echo '         <spinnerItem name="'$FREQ' MHz" value="'${FREQ}000'"/>'
-done
-`
-       </spinner>
-      <spinner description="Set the minimum freqency the CPU scales down to. Default: `expr \`cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq\` / 1000` MHz."
-               name="CPU min frequency"
-               action="generic /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq">"
-`
-cat /sys/devices/system/cpu/cpu0/cpufreq/UV_uV_table | \
-sed -e 's/mhz//g;s/://g' | awk '{ print $1, $2 }' | \
-while read FREQ UVOLT; do
-  echo '         <spinnerItem name="'$FREQ' MHz" value="'${FREQ}000'"/>'
-done
-`
-       </spinner>
-    </settingsPane>
-  </settingsTab>
-  <settingsTab name="CPU_UV">
-
-    <settingsPane description="Apply the settings on boot only if the desired settings prove to be stable, else the device ends up in a boot-loop. If turned off, the displayed values do not correspond to the current live values but the saved profile values. Some inconsistencies may occur on applying."
+    <settingsPane description="Apply the settings on boot only if the desired settings prove to be stable, else the device ends up in a boot-loop. If turned off, the displayed values do not correspond the current live values but the saved profile values, some inconsistencies may occur on applying." 
                   name="CPU control switch">
-      <checkbox description="If enabled, the below settings will be applied at boot."
-                name="Set CPU settings on boot"
+      <checkbox description="If enabled, the below settings will be applied at boot." 
+                name="Set CPU settings on boot" 
                 action="controlswitch CPU"
                 label="Set on boot"/>
     </settingsPane>
 
-    <settingsPane description="Decreasing voltage will lower power consumption of the CPU. Increasing it on overclocked frequencies improves stability. Too low a voltage may cause instabilities and freezes."
-                  name="CPU voltage control">
+    <settingsPane description="CPU scaling" 
+                  name="CPU Scaling">' >> $XML
 
-`
-cat /sys/devices/system/cpu/cpu0/cpufreq/UV_uV_table | \
-sed -e 's/mhz//g;s/://g' | awk '{ print $1, $2 }' | \
+echo "
+      <spinner description=\"Set the maximum frequency the CPU scales up to. Default: `cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq | rev | cut -c 4- | rev` MHz.\" 
+               name=\"CPU max frequency\" 
+               action=\"cpugeneric /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq\">" >> $XML
+
 while read FREQ UVOLT; do
-  echo '      <seekBar  description="Default voltage: '$UVOLT'µV"
-	        name="'${FREQ}' MHz step"
-                action="cpuvolt '${FREQ}'"
-                unit=" µV" min="600000" reversed="false" step="12500" max="1400000"/>"'
+  echo "
+        <spinnerItem name=\"$FREQ MHz\" value=\"${FREQ}000\"/>" >> $XML
+done < /sys/devices/system/cpu/cpu0/cpufreq/UV_uV_table
+
+
+echo "
+      </spinner>
+      <spinner description=\"Set the minimum frequency the CPU scales down to. Default: `cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq | rev | cut -c 4- | rev` MHz.\" 
+               name=\"CPU min frequency\" 
+               action=\"cpugeneric /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq\">" >> $XML
+
+while read FREQ UVOLT; do
+  echo "
+        <spinnerItem name=\"$FREQ MHz\" value=\"${FREQ}000\"/>" >> $XML
+done < /sys/devices/system/cpu/cpu0/cpufreq/UV_uV_table
+
+echo '
+      </spinner>
+    </settingsPane>
+
+    <settingsPane description="Decreasing voltage will lower power consumption of the CPU. Increasing it on overclocked frequencies improves stability. Too low voltage may cause instabilities and freezes." 
+                  name="CPU voltage control">' >> $XML
+
+while read FREQ UVOLT; do
+  echo "
+      <seekBar  description=\"Default voltage: $UVOLTµV\" 
+	        name=\"${FREQ} MHz step\" 
+                action=\"cpuvolt ${FREQ}\"
+                unit=\" µV\" min=\"600000\" reversed=\"false\" step=\"12500\" max=\"1400000\"/>" >> $XML
   CPUFREQLIST="$CPUFREQLIST $FREQ"
+done < /sys/devices/system/cpu/cpu0/cpufreq/UV_uV_table
+
+echo '
+    </settingsPane>
+  </settingsTab>
+
+  <settingsTab name="CPU Tuning">
+    <settingsPane description="PegasusQ is the default governor for daily running and complete power management schemes." 
+                  name="Active governor choice">' >> $XML
+echo "
+      <spinner description=\"Set active governor. Default: `cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor`\" 
+               name=\"Current governor\" 
+               action=\"generic /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor\">" >> $XML
+
+for GOVERNOR in `cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors`; do
+  echo "
+        <spinnerItem name=\"$GOVERNOR\" value=\"$GOVERNOR\"/>" >> $XML
 done
-`
+
+echo '
+      </spinner>
+    </settingsPane>
+    <settingsPane description="Parameters governing the dynamic voltage frequency scaling policy on the CPU." 
+                  name="DVFS tuneables">' >> $XML
+
+echo "
+      <seekBar description=\"The sampling period size in which the governor polls CPU load and triggers its decision making. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/sampling_rate` µS.\" 
+               name=\"Sampling rate\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/sampling_rate\"
+               unit=\"µS\" min=\"10000\" reversed=\"false\" step=\"1000\" max=\"100000\"/>
+
+      <seekBar description=\"If we scale up to the maximum policy frequency, extend the next sample period by a factor of so much. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/sampling_down_factor` samples.\" 
+               name=\"Sampling down factor\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/sampling_down_factor\"
+               unit=\"samples\" min=\"1\" reversed=\"false\" step=\"1\" max=\"10\"/>
+
+      <seekBar description=\"If the load exceeds the up threshold percentage on a single core, we trigger the scaling up logic. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/up_threshold`%.\" 
+               name=\"Up threshold\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/up_threshold\"
+               unit=\"%\" min=\"11\" reversed=\"false\" step=\"1\" max=\"99\"/>
+
+      <seekBar description=\"When targeting a frequency when scaling down, aim for a target which accomodates the current load without triggering the up threshold minus the differential value. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/down_differential`%.\" 
+               name=\"Down differential\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/down_differential\"
+               unit=\"%\" min=\"0\" reversed=\"false\" step=\"1\" max=\"50\"/>
+
+      <spinner description=\"Set the frequency threshold below which we use aggressive up-scaling. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/freq_for_responsiveness | rev | cut -c 4- | rev` MHz.\" 
+               name=\"Frequency for responsiveness\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/freq_for_responsiveness\">" >> $XML
+
+for FREQ in `echo $CPUFREQLIST`; do
+  echo "
+        <spinnerItem name=\"$FREQ MHz\" value=\"${FREQ}000\"/>" >> $XML
+done
+
+echo "
+      </spinner>
+
+      <seekBar description=\"If the frequency is below the frequency for responsiveness, use this as the up threshold. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/up_threshold_at_min_freq`%.\" 
+               name=\"Up threshold at min freq\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/up_threshold_at_min_freq\"
+               unit=\"%\" min=\"11\" reversed=\"false\" step=\"1\" max=\"99\"/>
+
+      <spinner description=\"Set the frequency threshold beyond which we use aggressive down-scaling. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/freq_for_fast_down | rev | cut -c 4- | rev` MHz.\" 
+               name=\"Frequency for fast-down\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/freq_for_fast_down\">" >> $XML
+
+for FREQ in `echo $CPUFREQLIST`; do
+  echo "
+        <spinnerItem name=\"$FREQ MHz\" value=\"${FREQ}000\"/>" >> $XML
+done
+
+echo "
+      </spinner>
+
+      <seekBar description=\"If the frequency is beyond the frequency for fast-down, use this as the up threshold. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/up_threshold_at_fast_down`%.\" 
+               name=\"Up threshold at fast-down\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/up_threshold_at_fast_down\"
+               unit=\"%\" min=\"11\" reversed=\"false\" step=\"1\" max=\"99\"/>
+
+      <seekBar description=\"When the up threshold is triggered, increase the CPU frequency by this percentage of the maximum frequency policy. This value gets dissected in the next two settings. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/freq_step`%.\"
+               name=\"Frequency step\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/freq_step\"
+               unit=\"%\" min=\"1\" reversed=\"false\" step=\"1\" max=\"100\"/>
+
+      <seekBar description=\"The remainder of load space above the up threshold is dissected into three slices each having different frequency increase step sizes. The first two slices are each of up threshold differential size, lop-sided towards the lower end of the load scale. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/up_threshold_diff`%.\"
+               name=\"Up threshold differential\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/up_threshold_diff\"
+               unit=\"%\" min=\"0\" reversed=\"false\" step=\"1\" max=\"20\"/>
+
+      <seekBar description=\"If we are in the first up threshold slice, we decrease the frequency step by twice this amount. The second slice decreases it once. In the last remaining slice the freq step value is taken as is. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/freq_step_dec`%.\"
+               name=\"Frequency step decrease\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/freq_step_dec\"
+               unit=\"%\" min=\"0\" reversed=\"false\" step=\"1\" max=\"33\"/>" >> $XML
+
+echo "
+    </settingsPane>
+  </settingsTab>
+
+  <settingsTab name=\"CPU Hotplug\">
+    <settingsPane description=\"Tuneables for CPU hotplug, online-ing and offline-ing of cores on light use when not being used.\" 
+                  name=\"Scaling speed\">
+
+      <seekBar description=\"The rate in governor samples at which a hotplug in decision takes place. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/cpu_up_rate` sample(s).\"
+               name=\"CPU up rate\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/cpu_up_rate\"
+               unit=\"sample(s)\" min=\"1\" reversed=\"false\" step=\"1\" max=\"40\"/>
+
+      <seekBar description=\"The rate in governor samples at which a hotplug out decision takes place. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/cpu_down_rate` sample(s).\"
+               name=\"CPU down rate\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/cpu_down_rate\"
+               unit=\"sample(s)\" min=\"1\" reversed=\"false\" step=\"1\" max=\"40\"/>
+
+      <seekBar description=\"The number of cores to bring up online when a hotplug in decision is triggered. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/up_nr_cpus` core(s).\"
+               name=\"Core upbring-count\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/up_nr_cpus\"
+               unit=\"core(s)\" min=\"1\" reversed=\"false\" step=\"1\" max=\"4\"/>
+
+    </settingsPane>
+    <settingsPane description=\"Override hotplug decisions and limit core count to given boundaries. Priorities: hotplug lock > max cpu lock > min cpu lock\" 
+                  name=\"Configuration overrides\">
+
+      <seekBar description=\"Locks the core count and disables the hotplug logic. 0 disables the setting. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_lock` core(s).\"
+               name=\"Hotplug lock\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_lock\"
+               unit=\"core(s)\" min=\"0\" reversed=\"false\" step=\"1\" max=\"4\"/>
+
+      <seekBar description=\"Maximum allowed number of cores. 0 disables the setting. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/max_cpu_lock` core(s).\"
+               name=\"Maximum CPU lock\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/max_cpu_lock\"
+               unit=\"core(s)\" min=\"0\" reversed=\"false\" step=\"1\" max=\"4\"/>
+
+      <seekBar description=\"Minimum allowed number of cores. 0 disables the setting. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/min_cpu_lock` core(s).\"
+               name=\"Minimum CPU lock\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/min_cpu_lock\"
+               unit=\"core(s)\" min=\"0\" reversed=\"false\" step=\"1\" max=\"4\"/>" >> $XML
+echo '
+    </settingsPane>
+    <settingsPane description="To bring up a core, all of the given conditions must be fulfilled. The governor analyses the up/down rate amount of sample information collected to this point, and taking the roof of each value type over the whole rate period. If the conditions from the starting point of the current core count are met, it triggers a CPU up or down. The frequency thresholds are the maximum frequency reached during the whole rate period. The runqueue thresholds are the 100th factor of the thread count averages running on the system." 
+                  name="Hotplug conditionals">' >> $XML
+
+
+echo "
+      <spinner description=\"Frequency threshold to bring up a core if 1 online. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_freq_1_1 | rev | cut -c 4- | rev` MHz.\" 
+               name=\"Hotplug freq from 1 core to online\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_freq_1_1\">" >> $XML
+
+for FREQ in `echo $CPUFREQLIST`; do
+  echo "
+        <spinnerItem name=\"$FREQ MHz\" value=\"${FREQ}000\"/>" >> $XML
+done
+
+echo "
+      </spinner>
+      <spinner description=\"Frequency threshold to bring down a core if 2 online. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_freq_2_0 | rev | cut -c 4- | rev` MHz.\" 
+               name=\"Hotplug freq from 2 cores to offline\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_freq_2_0\">" >> $XML
+
+for FREQ in `echo $CPUFREQLIST`; do
+  echo "
+        <spinnerItem name=\"$FREQ MHz\" value=\"${FREQ}000\"/>" >> $XML
+done
+
+echo "
+      </spinner>
+      <spinner description=\"Frequency threshold to bring up a core if 2 online. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_freq_2_1 | rev | cut -c 4- | rev` MHz.\" 
+               name=\"Hotplug freq from 2 cores to online\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_freq_2_1\">" >> $XML
+
+for FREQ in `echo $CPUFREQLIST`; do
+  echo "
+        <spinnerItem name=\"$FREQ MHz\" value=\"${FREQ}000\"/>" >> $XML
+done
+
+echo "
+      </spinner>
+      <spinner description=\"Frequency threshold to bring down a core if 3 online. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_freq_3_0 | rev | cut -c 4- | rev` MHz.\" 
+               name=\"Hotplug freq from 3 cores to offline\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_freq_3_0\">" >> $XML
+
+for FREQ in `echo $CPUFREQLIST`; do
+  echo "
+        <spinnerItem name=\"$FREQ MHz\" value=\"${FREQ}000\"/>" >> $XML
+done
+
+echo "
+      </spinner>
+      <spinner description=\"Frequency threshold to bring up a core if 3 online. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_freq_3_1 | rev | cut -c 4- | rev` MHz.\" 
+               name=\"Hotplug freq from 3 core to online\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_freq_3_1\">" >> $XML
+
+for FREQ in `echo $CPUFREQLIST`; do
+  echo "
+        <spinnerItem name=\"$FREQ MHz\" value=\"${FREQ}000\"/>" >> $XML
+done
+
+echo "
+      </spinner>
+      <spinner description=\"Frequency threshold to bring down a core if 4 online. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_freq_4_0 | rev | cut -c 4- | rev` MHz.\" 
+               name=\"Hotplug freq from 4 cores to offline\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_freq_4_0\">" >> $XML
+
+for FREQ in `echo $CPUFREQLIST`; do
+  echo "
+        <spinnerItem name=\"$FREQ MHz\" value=\"${FREQ}000\"/>" >> $XML
+done
+
+echo "
+      </spinner>
+      <seekBar description=\"Runqueue threshold to bring up a core if 1 online. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_rq_1_1` thread depth.\"
+               name=\"Runqueue depth from 1 core to online\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_rq_1_1\"
+               unit=\" thread depth\" min=\"100\" reversed=\"false\" step=\"5\" max=\"600\"/>
+
+      <seekBar description=\"Runqueue threshold to bring down a core if 2 online. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_rq_2_0` thread depth.\"
+               name=\"Runqueue depth from 2 core to offline\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_rq_2_0\"
+               unit=\"thread depth\" min=\"100\" reversed=\"false\" step=\"5\" max=\"600\"/>
+
+      <seekBar description=\"Runqueue threshold to bring up a core if 2 online. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_rq_2_1` thread depth.\"
+               name=\"Runqueue depth from 2 cores to online\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_rq_2_1\"
+               unit=\"thread depth\" min=\"100\" reversed=\"false\" step=\"5\" max=\"600\"/>
+
+      <seekBar description=\"Runqueue threshold to bring down a core if 3 online. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_rq_3_0` thread depth.\"
+               name=\"Runqueue depth from 3 core to offline\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_rq_3_0\"
+               unit=\"thread depth\" min=\"100\" reversed=\"false\" step=\"5\" max=\"600\"/>
+
+      <seekBar description=\"Runqueue threshold to bring up a core if 2 online. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_rq_3_1` thread depth.\"
+               name=\"Runqueue depth from 3 cores to online\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_rq_3_1\"
+               unit=\"thread depth\" min=\"100\" reversed=\"false\" step=\"5\" max=\"600\"/>
+
+      <seekBar description=\"Runqueue threshold to bring down a core if 4 online. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_rq_4_0` thread depth.\"
+               name=\"Runqueue depth from 4 core to offline\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_rq_4_0\"
+               unit=\"thread depth\" min=\"100\" reversed=\"false\" step=\"5\" max=\"600\"/>
+
+    </settingsPane>
+    <settingsPane description=\"Additionally to the frequency and runqueue depth, we consider the average frequency load on all cores and conditionally consider that on top of the other conditions. This enables more aggressive and true-to real load scaling.\" 
+                  name=\"CPU core count load biasing\">
+
+      <seekBar description=\"Core count beyond which we bias the online count through the global load. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/cpu_online_bias_count` core(s).\"
+               name=\"CPU online load bias count\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/cpu_online_bias_count\"
+               unit=\"core(s)\" min=\"1\" reversed=\"false\" step=\"1\" max=\"4\"/>
+
+      <seekBar description=\"Global average load up threshold of the last up rate sample count period, if current core count correponds or exceeds the core bias count, to enable hotplug-in of further cores, if frequency and runqueue depth conditions are also met. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/cpu_online_bias_up_threshold`%.\"
+               name=\"CPU online bias up threshold\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/cpu_online_bias_up_threshold\"
+               unit=\"%\" min=\"1\" reversed=\"false\" step=\"1\" max=\"100\"/>
+
+      <seekBar description=\"Global average load down threshold of the last up rate sample count period, if current core count exceeds the core bias count, to enable hotplug-out of core(s), regardless of the primary conditions. Default: `cat /sys/devices/system/cpu/cpufreq/pegasusq/cpu_online_bias_down_threshold`%.\"
+               name=\"CPU online bias down threshold\" 
+               action=\"generic /sys/devices/system/cpu/cpufreq/pegasusq/cpu_online_bias_down_threshold\"
+               unit=\"%\" min=\"1\" reversed=\"false\" step=\"1\" max=\"100\"/>" >> $XML
+
+echo '
     </settingsPane>
   </settingsTab>
 
   <settingsTab name="I/O">
-    <settingsPane description="I/O Settings" name="I/O Settings">
-      <spinner description="This will set the default I/O scheduler. Default I/O scheduler will only be set during early stages of booting (before init.d execution) and can be overriden by later scripts or apps." name="Default I/O Scheduler" action="generic /sys/block/mmcblk0/queue/scheduler">
-`#Start I/O Scheduler dynamic block
-for IOSCHED in \`cat /sys/block/mmcblk0/queue/scheduler|sed -e 's/\]//;s/\[//'\`;
-do
-echo '             <spinnerItem name="'$IOSCHED'" value="'$IOSCHED'"/>'
-done
-#End I/O Scheduler dynamic block`
-      </spinner>
-    </settingsPane>
-    <settingsPane description="FSync Control Settings" name="FSync Control">
-      <checkbox description="Dynamic FSync is enabled by default to ensure the integrity of the files during I/O operations. When the screen is off and FSync is Enabled (default), FSync will happen during screen off and stop when screen is on. Disabling Dynamic FSync along with FSync Enabled below means FSync will happen whether the screen is on or off. This ensures the highest level of data integrity at the cost of speed. Disabling Dynamic FSync and having FSync Disabled below completely disables FSync even if your screen is off. This gives you the best I/O speed possible at the cost of data integrity. If the system crashes you'll lose up to 1 second of data at most." name="Dynamic FSync" action="generic01 /sys/kernel/dyn_fsync/Dyn_fsync_active" label="Dynamic FSync"/>
-      <spinner description="Dynamic FSync is enabled by default to ensure the integrity of the files during I/O operations. When the screen is off and FSync is Enabled (default), FSync will happen. If FSync is disabled here Dynamic FSync will respect your choice to disable FSync completely. Please remember that disabling it may give you a boost in I/O throughput at the expense of stability. You have been warned! That said, we don't expect any crashes and even if we do get one the bias towards latency + the tweaked mount options ensure you lose only 1 second worth of data at most." name="FSync Control" action="generic /sys/class/misc/fsynccontrol/fsync_enabled">
-             <spinnerItem name="FSync Enabled (default)" value="1"/>
-             <spinnerItem name="FSync Disabled" value="0"/>
-      </spinner>
-    </settingsPane>
-  </settingsTab>
+    <settingsPane description="Set the active I/O elevator algorithm. The scheduler decides how to handle I/O requests and how to handle them. SIO is the everyday recommended default scheduler for RedPill."  
+      name="I/O schedulers">' >> $XML
 
+echo "
+      <spinner name=\"Current internal storage scheduler\"
+               action=\"iosched internal /sys/block/mmcblk0/queue/scheduler\">" >> $XML
+
+for IOSCHED in `cat /sys/block/mmcblk0/queue/scheduler | sed -e 's/\]//;s/\[//'`; do
+  echo "
+        <spinnerItem name=\"$IOSCHED\" value=\"$IOSCHED\"/>" >> $XML
+done
+
+echo '
+      </spinner>' >> $XML
+
+echo "
+      <spinner name=\"Current SD card scheduler\"
+               action=\"iosched sd /sys/block/mmcblk1/queue/scheduler\">" >> $XML
+
+for IOSCHED in `cat /sys/block/mmcblk0/queue/scheduler | sed -e 's/\]//;s/\[//'`; do
+  echo "
+        <spinnerItem name=\"$IOSCHED\" value=\"$IOSCHED\"/>" >> $XML
+done
+
+echo '
+      </spinner>
+    </settingsPane>
+
+    <settingsPane description="The readahead value is the requested block size the host controller reads into memory on any given I/O read request. Increasing the read-ahead on cards with high latency and lower IOPS will increase the raw thoroughput."
+                  name="I/O read-ahead">' >> $XML 
+
+echo "
+      <seekBar  description=\"The read-ahead value on the internal phone memory.\" 
+                name=\"Internal storage read-ahead\" 
+                action=\"generictag internal /sys/block/mmcblk0/queue/read_ahead_kb\"
+                unit=\"kB\" min=\"128\" reversed=\"false\" step=\"128\" max=\"2048\"/>" >> $XML
+
+echo "                
+      <seekBar  description=\"The read-ahead value on the external SD card.\" 
+                name=\"SD card read-ahead\" 
+                action=\"generictag sd /sys/block/mmcblk1/queue/read_ahead_kb\"
+                unit=\"kB\" min=\"128\" reversed=\"false\" step=\"128\" max=\"2048\"/>" >> $XML
+
+echo "
+    </settingsPane>
+    <settingsPane description=\"FSync Control Settings\"
+                  name=\"FSync Control\">
+      <checkbox description=\"FSync is enabled by default to ensure the integrity of the files during I/O operations. Please remember that disabling it may give you a boost in I/O throughput at the expense of stability. You have been warned!\" 
+                name=\"FSync Control\" 
+                action=\"generic01 /sys/class/misc/fsynccontrol/fsync_enabled\"
+                label=\"Enable FSync\"/>
+
+    </settingsPane>
+  </settingsTab>" >> $XML
+
+echo '
   <settingsTab name="Audio">
     <settingsPane description="Speaker Tuning Settings" name="Speaker Tuning">
       <checkbox description="Enable speaker tuning for better bass response on main speakers" name="Speaker Tuning" action="generic01 /sys/class/misc/scoobydoo_sound/speaker_tuning" label="Speaker Tuning"/>
       <seekBar description="Speaker Amplification Offset. 0 means stock value. Having too much amplification may cause distortion."
-		name="Speaker Amplification Offset" action="generic /sys/class/misc/scoobydoo_sound/speaker_offset" unit="" min="-6" reversed="false" step="1" max="6"/>
+    name="Speaker Amplification Offset" action="generic /sys/class/misc/scoobydoo_sound/speaker_offset" unit="" min="-6" reversed="false" step="1" max="6"/>
     </settingsPane>
     <settingsPane description="Headphone Amplification Settings" name="Headphone Amplification">
       <seekBar description="Headphone Amplifier Level (0-63 which corresponds to -57db-6db)"
-		name="Headphone Amplifier" action="generic /sys/class/misc/scoobydoo_sound/headphone_amplifier_level" unit="" min="0" reversed="false" step="1" max="63"/>
+    name="Headphone Amplifier" action="generic /sys/class/misc/scoobydoo_sound/headphone_amplifier_level" unit="" min="0" reversed="false" step="1" max="63"/>
     </settingsPane>
     <settingsPane description="3D Effect Settings" name="3D Effect">
       <spinner description="3D effect" name="3D Effect" action="generic /sys/class/misc/scoobydoo_sound/stereo_expansion">
@@ -114,7 +392,7 @@ done
              <spinnerItem name="Enabled" value="1"/>
       </spinner>
       <seekBar description="3D Effect Gain Level (0-31)"
-		name="3D Effect Gain" action="generic /sys/class/misc/scoobydoo_sound/stereo_expansion_gain" unit="" min="0" reversed="false" step="1" max="31"/>
+    name="3D Effect Gain" action="generic /sys/class/misc/scoobydoo_sound/stereo_expansion_gain" unit="" min="0" reversed="false" step="1" max="31"/>
     </settingsPane>
     <settingsPane description="EQ Settings" name="EQ Settings">
       <spinner description="Choose which equalizer settings to use: Presets or Graphical Equalizer." name="EQ Presets" action="eq-presets eq_selection">
@@ -135,19 +413,19 @@ done
     </settingsPane>
     <settingsPane description="Graphical Equalizer" name="Graphical Equalizer">
       <seekBar description=""
-		name="Band1 gain" action="eq-presets eq_band1" unit=" dB" min="-12" reversed="false" step="1" max="12"/>
+    name="Band1 gain" action="eq-presets eq_band1" unit=" dB" min="-12" reversed="false" step="1" max="12"/>
       <seekBar description=""
-		name="Band2 gain" action="eq-presets eq_band2" unit=" dB" min="-12" reversed="false" step="1" max="12"/>
+    name="Band2 gain" action="eq-presets eq_band2" unit=" dB" min="-12" reversed="false" step="1" max="12"/>
       <seekBar description=""
-		name="Band3 gain" action="eq-presets eq_band3" unit=" dB" min="-12" reversed="false" step="1" max="12"/>
+    name="Band3 gain" action="eq-presets eq_band3" unit=" dB" min="-12" reversed="false" step="1" max="12"/>
       <seekBar description=""
-		name="Band4 gain" action="eq-presets eq_band4" unit=" dB" min="-12" reversed="false" step="1" max="12"/>
+    name="Band4 gain" action="eq-presets eq_band4" unit=" dB" min="-12" reversed="false" step="1" max="12"/>
       <seekBar description=""
-		name="Band5 gain" action="eq-presets eq_band5" unit=" dB" min="-12" reversed="false" step="1" max="12"/>
+    name="Band5 gain" action="eq-presets eq_band5" unit=" dB" min="-12" reversed="false" step="1" max="12"/>
     </settingsPane>
     <settingsPane description="EQ Extras" name="EQ Extras">
       <seekBar description="This will prevent distortion by decreasing the output volume by the selected amount. Leave it 0 if you do not have a distortion problem."
-		name="Negative Digital Gain" action="eq-presets digital_gain" unit=" dB" min="0" reversed="false" step="1" max="12"/>
+    name="Negative Digital Gain" action="eq-presets digital_gain" unit=" dB" min="0" reversed="false" step="1" max="12"/>
     </settingsPane>
     <settingsPane description="Optimization, conversion quality, signal processing and effect settings" name="Other Settings">
       <spinner description="Tuned WM1811 FLL to generate clock source" name="FLL Tuning" action="generic /sys/class/misc/scoobydoo_sound/fll_tuning">
@@ -167,24 +445,24 @@ done
              <spinnerItem name="Enabled" value="1"/>
       </spinner>
     </settingsPane>
-  </settingsTab>
+  </settingsTab>' >> $XML
 
-  <settingsTab name="Misc">
-    <settingsPane description="Misc Settings" name="Misc Settings">
-      <button description="Back up the EFS partition. If you don't have a current backup I highly recommend to perform one as the risk of NOT having an EFS backup can be disastrous. This will create 2 backups in your /sdcard directory: efsbackup.tar.gz and efsdev-mmcblk0p3.img.gz (The former being a tar.gz of the entire /efs partition; the latter being an exact copy o the /efs partition in .img which is then gzipped to save space). If you ever need to restore your /efs any of the available tools to do so can use either of the 2 backups. Better safe than sorry." name="Backup EFS" action="efs-backup" label="Backup EFS"/>
-      <checkbox description="Enable or Disable Android Logger (needs a reboot to take effect)" name="Android Logger" action="generic /tmp/logger" label="Android Logger"/>
-      <spinner description="Enable or Disable Kernel dmesg" name="Kernel dmesg" action="generic /proc/sys/kernel/dmesg_restrict">
-             <spinnerItem name="Disabled" value="1"/>
-             <spinnerItem name="Enabled" value="0"/>
-      </spinner>
-      <checkbox description="Enable or Disable Using your ExFAT formatted ExtSdCard as the Internal SD Card. Thanks to Mattiadj of XDA for the idea and script. This version for the N7100 was tweaked and fully tested by pongster. (Please make sure your ExtSdCard is ExFAT formatted AND reboot to enable the tweak to take effect)" name="ExFAT as Internal" action="generic /tmp/ext2intexfat" label="ExFAT as Internal"/>
-      <checkbox description="Enable or Disable Using your FAT32 formatted ExtSdCard as the Internal SD Card. Thanks to Mattiadj of XDA for the idea and script. This version for the N7100 was tweaked and fully tested by pongster. (Please make sure your ExtSdCard is FAT32 formatted AND reboot to enable the tweak to take effect)" name="FAT32 as Internal" action="generic /tmp/ext2intfat" label="FAT32 as Internal"/>
-      <spinner description="Notification LED Behavior" name="Notification LED Behavior" action="generic /sys/devices/virtual/sec/led/led_fade">
-             <spinnerItem name="ROM default" value="-1"/>
-             <spinnerItem name="Blinking" value="0"/>
-             <spinnerItem name="Fading" value="1"/>
+echo "
+  <settingsTab name=\"Misc\">
+    <settingsPane description=\"Misc Settings\" name=\"Misc Settings\">
+      <button description=\"Back up the EFS partition. If you don't have a current backup I highly recommend to perform one as the risk of NOT having an EFS backup can be disastrous. This will create 2 backups in your /sdcard directory: efsbackup.tar.gz and efsdev-mmcblk0p3.img.gz (The former being a tar.gz of the entire /efs partition; the latter being an exact copy o the /efs partition in .img which is then gzipped to save space). If you ever need to restore your /efs any of the available tools to do so can use either of the 2 backups. Better safe than sorry.\" name=\"Backup EFS\" action=\"efs-backup\" label=\"Backup EFS\"/>
+      <checkbox description=\"Enable or Disable Android Logger (needs a reboot to take effect)\" name=\"Android Logger\" action=\"generic02 /tmp/logger\" label=\"Android Logger\"/>
+      <checkbox description=\"Enable or Disable Kernel dmesg\" name=\"Disable Kernel dmesg\" action=\"generic01 /proc/sys/kernel/dmesg_restrict\" label=\"Disable dmesg\"/>
+      <checkbox description=\"Enable or Disable Using your ExFAT formatted ExtSdCard as the Internal SD Card. Thanks to Mattiadj of XDA for the idea and script. This version for the N7100 was tweaked and fully tested by pongster. (Please make sure your ExtSdCard is ExFAT formatted AND reboot to enable the tweak to take effect)\" name=\"ExFAT as Internal\" action=\"generic02 /tmp/ext2intexfat\" label=\"ExFAT as Internal\"/>
+      <checkbox description=\"Enable or Disable Using your FAT32 formatted ExtSdCard as the Internal SD Card. Thanks to Mattiadj of XDA for the idea and script. This version for the N7100 was tweaked and fully tested by pongster. (Please make sure your ExtSdCard is FAT32 formatted AND reboot to enable the tweak to take effect)\" name=\"FAT32 as Internal\" action=\"generic02 /tmp/ext2intfat\" label=\"FAT32 as Internal\"/>
+      <spinner description=\"Notification LED Behavior\" name=\"Notification LED Behavior\" action=\"generic /sys/devices/virtual/sec/led/led_fade\">
+             <spinnerItem name=\"ROM default\" value=\"-1\"/>
+             <spinnerItem name=\"Blinking\" value=\"0\"/>
+             <spinnerItem name=\"Fading\" value=\"1\"/>
       </spinner>
     </settingsPane>
   </settingsTab>
-</settingsRoot>
-ENDCONFIG
+</settingsRoot>" >> $XML
+
+
+chmod 777 $XML

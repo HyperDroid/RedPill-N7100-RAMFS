@@ -9,4 +9,3 @@ then
 else
   echo "You already have an efs backup in your sdcard. Please delete it before creating another one."
 fi
-

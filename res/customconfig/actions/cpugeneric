@@ -10,7 +10,9 @@ if [ -f $2 ];then
 			echo $FILEVAR=`cat $2` >> $DEFAULT_PROFILE
 		fi
 	else
-		echo $3 > $2
+		if [ "$CONTROLSWITCH_CPU" == "on" -o "$CONFIG_BOOTED" == "true" ]; then
+			echo $3 > $2
+		fi
 		eval $FILEVAR=`cat $2`
 	fi
 
