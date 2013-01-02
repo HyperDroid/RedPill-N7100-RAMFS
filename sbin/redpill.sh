@@ -2,41 +2,56 @@
 
 mkdir /data/.redpill
 chmod 777 /data/.redpill
-ccxmlsum=`md5sum /res/customconfig/customconfig.xml | awk '{print $1}'`
-if [ "a${ccxmlsum}" != "a`cat /data/.redpill/.ccxmlsum`" ];
-then
-  rm -f /data/.redpill/*.profile
-  rm -f /data/.redpill/.active.profile
-  echo ${ccxmlsum} > /data/.redpill/.ccxmlsum
-fi
-[ ! -f /data/.redpill/default.profile ] && cp /res/customconfig/default.profile /data/.redpill
-[ ! -f /data/.redpill/battery.profile ] && cp /res/customconfig/battery.profile /data/.redpill/battery.profile
-[ ! -f /data/.redpill/performance.profile ] && cp /res/customconfig/performance.profile /data/.redpill/performance.profile
+#ccxmlsum=`md5sum /res/customconfig/customconfig.xml | awk '{print $1}'`
+#if [ "a${ccxmlsum}" != "a`cat /data/.redpill/.ccxmlsum`" ];
+#then
+#  rm -f /data/.redpill/*.profile
+#  rm -f /data/.redpill/.active.profile
+#  echo ${ccxmlsum} > /data/.redpill/.ccxmlsum
+#fi
+#[ ! -f /data/.redpill/default.profile ] && cp /res/customconfig/default.profile /data/.redpill
+#[ ! -f /data/.redpill/battery.profile ] && cp /res/customconfig/battery.profile /data/.redpill/battery.profile
+#[ ! -f /data/.redpill/performance.profile ] && cp /res/customconfig/performance.profile /data/.redpill/performance.profile
 
-. /res/customconfig/customconfig-helper
-read_defaults
-read_config
+#. /res/customconfig/customconfig-helper
+#read_defaults
+#read_config
 
 mount -o remount,rw /system
 /sbin/busybox mount -t rootfs -o remount,rw rootfs
 
-#Exynos-Abuse Workaround for 4.1.2 Firmware (Thanks to alephzain for finding the exploit)
-#camsum=`md5sum /system/lib/hw/camera.smdk4x12.so | awk '{print $1}'`
-#if [ "a${camsum}" != "a`915b79b73d16da288eb0f201c6866143`" ];
-#then
-#rm -f /system/lib/hw/camera.smdk4x12.so
-#cp /res/camera.smdk4x12.so /system/lib/hw/camera.smdk4x12.so
-#chmod 644 /system/lib/hw/camera.smdk4x12.so
-#chown 0:0 /system/lib/hw/camera.smdk4x12.so
-#fi
+# Scoobydoo
+echo 1 A 0x0FBB > /sys/class/misc/scoobydoo_sound/headphone_eq_bands_values
+echo 1 B 0x0407 > /sys/class/misc/scoobydoo_sound/headphone_eq_bands_values
+echo 1 PG 0x0114 > /sys/class/misc/scoobydoo_sound/headphone_eq_bands_values
+echo 2 A 0x1F8C > /sys/class/misc/scoobydoo_sound/headphone_eq_bands_values
+echo 2 B 0xF073 > /sys/class/misc/scoobydoo_sound/headphone_eq_bands_values
+echo 2 C 0x040A > /sys/class/misc/scoobydoo_sound/headphone_eq_bands_values
+echo 2 PG 0x01C8 > /sys/class/misc/scoobydoo_sound/headphone_eq_bands_values
+
+echo 1 > /sys/class/misc/scoobydoo_sound/fll_tuning
+echo 1 > /sys/class/misc/scoobydoo_sound/dac_osr128
+echo 0 > /sys/class/misc/scoobydoo_sound/dac_direct
+echo 0 > /sys/class/misc/scoobydoo_sound/speaker_tuning
+echo 50 > /sys/class/misc/scoobydoo_sound/headphone_amplifier_level
+
+echo 4 > /sys/class/misc/scoobydoo_sound/headphone_eq_b1_gain
+echo 3 > /sys/class/misc/scoobydoo_sound/headphone_eq_b2_gain
+echo 2 > /sys/class/misc/scoobydoo_sound/headphone_eq_b3_gain
+echo 2 > /sys/class/misc/scoobydoo_sound/headphone_eq_b4_gain
+echo 3 > /sys/class/misc/scoobydoo_sound/headphone_eq_b5_gain
+echo 1 > /sys/class/misc/scoobydoo_sound/headphone_eq
 
 # Android Logger
-if [ "$logger" == "on" ];then
+default_profile="/data/.redpill/default.profile"
+logger=`cat $default_profile | grep logger`
+
+if [ "$logger" == "logger=on" ];then
 insmod /lib/modules/logger.ko
 fi
 
 # Disable debugging on some modules
-if [ "$logger" == "off" ];then
+if [ "$logger" == "logger=off" ];then
   rm -rf /dev/log
   echo 0 > /sys/module/ump/parameters/ump_debug_level
   echo 0 > /sys/module/mali/parameters/mali_debug_level
@@ -52,27 +67,27 @@ if [ "$logger" == "off" ];then
 fi
 
 # Install STweaks
-if [ ! -f /data/.redpill/stweaks-installed ];
-then
-cd /
-rm /system/app/STweaks.apk
-rm -f /data/app/com.gokhanmoral.STweaks*
-rm -f /data/dalvik-cache/*STweaks.*
-rm -f /data/app/com.gokhanmoral.stweaks*
-rm -f /data/dalvik-cache/*stweaks*
 
-cat /res/STweaks.apk > /system/app/STweaks.apk
-chown 0.0 /system/app/STweaks.apk
-chmod 644 /system/app/STweaks.apk
-mkdir /data/.redpill
-chmod 777 /data/.redpill
-echo "1" > /data/.redpill/stweaks-installed
+if [ ! -f /system/app/STweaks.apk ]; then
+  cd /
+  rm /system/app/STweaks.apk
+  rm -f /data/app/com.gokhanmoral.STweaks*
+  rm -f /data/dalvik-cache/*STweaks.*
+  rm -f /data/app/com.gokhanmoral.stweaks*
+  rm -f /data/dalvik-cache/*stweaks*
+  cat /res/STweaks.apk > /system/app/STweaks.apk
+  chown 0.0 /system/app/STweaks.apk
+  chmod 644 /system/app/STweaks.apk
 fi
 
 # ExtSdCard as Internal (For those Using 64GB ExFAT and Have a LOT of Apps)
 # Thanks to Mattiadj of XDA for the idea and script
 # Tweaked and Fully Tested by pongster to work on N7100
-if [ "$ext2intexfat" == "on" ];then
+default_profile="/data/.redpill/default.profile"
+ext2intexfat=`cat $default_profile | grep ext2intexfat`
+ext2intfat=`cat $default_profile | grep ext2intfat`
+
+if [ "$ext2intexfat" == "ext2intexfat=on" ];then
 sleep 1
 mount -o remount,rw /
 mount -t exfat -o umask=0000,rw,nosuid,nodev,noexec /dev/block/vold/179:49 /storage/sdcard0
@@ -84,7 +99,7 @@ chown 1023:1023 /storage/extSdCard
 chown 1000:1000 /storage/sdcard0
 fi
 
-if [ "$ext2intfat" == "on" ];then
+if [ "$ext2intfat" == "ext2intfat=on" ];then
 sleep 1
 mount -o remount,rw /
 mount -t vfat -o umask=0000,rw,nosuid,nodev,noexec /dev/block/vold/179:49 /storage/sdcard0
@@ -267,23 +282,23 @@ if [ -e /proc/sys/fs/lease-break-time ]; then
 fi
 
 # Boost SD Cards
-chmod 777 /sys/block/mmcblk0/queue/read_ahead_kb
-echo "2048" > /sys/block/mmcblk0/queue/read_ahead_kb
-chmod 777 /sys/block/mmcblk1/queue/read_ahead_kb
-echo "2048" > /sys/block/mmcblk1/queue/read_ahead_kb
-chmod 777 /sys/devices/virtual/bdi/179:0/read_ahead_kb
-echo "2048" > /sys/devices/virtual/bdi/179:0/read_ahead_kb
+#chmod 777 /sys/block/mmcblk0/queue/read_ahead_kb
+#echo "2048" > /sys/block/mmcblk0/queue/read_ahead_kb
+#chmod 777 /sys/block/mmcblk1/queue/read_ahead_kb
+#echo "2048" > /sys/block/mmcblk1/queue/read_ahead_kb
+#chmod 777 /sys/devices/virtual/bdi/179:0/read_ahead_kb
+#echo "2048" > /sys/devices/virtual/bdi/179:0/read_ahead_kb
 
 # apply STweaks defaults
-sleep 20
-export CONFIG_BOOTING=1
+#sleep 15
+#export CONFIG_BOOTING=1
 /res/uci.sh apply
-export CONFIG_BOOTING=
+#export CONFIG_BOOTING=
 
 # Run Init Scripts
 if [ -d /system/etc/init.d ]; then
   /sbin/busybox run-parts /system/etc/init.d
-fi
+fi;
 
 /sbin/busybox mount -t rootfs -o remount,ro rootfs
 mount -o remount,ro /system
