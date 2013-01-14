@@ -33,7 +33,7 @@ echo 1 > /sys/class/misc/scoobydoo_sound/fll_tuning
 echo 1 > /sys/class/misc/scoobydoo_sound/dac_osr128
 echo 0 > /sys/class/misc/scoobydoo_sound/dac_direct
 echo 0 > /sys/class/misc/scoobydoo_sound/speaker_tuning
-echo 50 > /sys/class/misc/scoobydoo_sound/headphone_amplifier_level
+echo 55 > /sys/class/misc/scoobydoo_sound/headphone_amplifier_level
 
 echo 4 > /sys/class/misc/scoobydoo_sound/headphone_eq_b1_gain
 echo 3 > /sys/class/misc/scoobydoo_sound/headphone_eq_b2_gain
@@ -41,6 +41,9 @@ echo 2 > /sys/class/misc/scoobydoo_sound/headphone_eq_b3_gain
 echo 2 > /sys/class/misc/scoobydoo_sound/headphone_eq_b4_gain
 echo 3 > /sys/class/misc/scoobydoo_sound/headphone_eq_b5_gain
 echo 1 > /sys/class/misc/scoobydoo_sound/headphone_eq
+
+# GPU
+echo -1 > /sys/devices/system/gpu/time_in_state
 
 # Android Logger
 default_profile="/data/.redpill/default.profile"
@@ -151,135 +154,135 @@ echo "0" > /sys/devices/system/cpu/cpufreq/pegasusq/hotplug_lock
 
 # Miscellaneous Kernel tweaks
 
-if [ -e /proc/sys/kernel/msgmni ]; then
-        echo "64000" > /proc/sys/kernel/msgmni
-fi
-if [ -e /proc/sys/kernel/msgmax ]; then
-        echo "64000" > /proc/sys/kernel/msgmax
-fi
-if [ -e /proc/sys/kernel/panic_on_oops ]; then
-        echo "1" > /proc/sys/kernel/panic_on_oops
-fi
-if [ -e /proc/sys/kernel/panic ]; then
-        echo "0" > /proc/sys/kernel/panic
-fi
-if [ -e /proc/sys/kernel/tainted ]; then
-        echo "0" > /proc/sys/kernel/tainted
-fi
-if [ -e /proc/sys/kernel/sched_latency_ns ]; then
-        echo "800000" > /proc/sys/kernel/sched_latency_ns
-fi
-if [ -e /proc/sys/kernel/sched_min_granularity_ns ]; then
-        echo "100000" > /proc/sys/kernel/sched_min_granularity_ns
-fi
-if [ -e /proc/sys/kernel/sched_wakeup_granularity_ns ]; then
-        echo "50000" > /proc/sys/kernel/sched_wakeup_granularity_ns
-fi
-if [ -e /proc/sys/kernel/hung_task_timeout_secs ]; then
-        echo "30" > /proc/sys/kernel/hung_task_timeout_secs
-fi
-if [ -e /proc/sys/kernel/sem ]; then
-        echo "500 512000 64 2048" > /proc/sys/kernel/sem
-fi
+#if [ -e /proc/sys/kernel/msgmni ]; then
+#        echo "64000" > /proc/sys/kernel/msgmni
+#fi
+#if [ -e /proc/sys/kernel/msgmax ]; then
+#        echo "64000" > /proc/sys/kernel/msgmax
+#fi
+#if [ -e /proc/sys/kernel/panic_on_oops ]; then
+#        echo "1" > /proc/sys/kernel/panic_on_oops
+#fi
+#if [ -e /proc/sys/kernel/panic ]; then
+#        echo "0" > /proc/sys/kernel/panic
+#fi
+#if [ -e /proc/sys/kernel/tainted ]; then
+#        echo "0" > /proc/sys/kernel/tainted
+#fi
+#if [ -e /proc/sys/kernel/sched_latency_ns ]; then
+#        echo "800000" > /proc/sys/kernel/sched_latency_ns
+#fi
+#if [ -e /proc/sys/kernel/sched_min_granularity_ns ]; then
+#        echo "100000" > /proc/sys/kernel/sched_min_granularity_ns
+#fi
+#if [ -e /proc/sys/kernel/sched_wakeup_granularity_ns ]; then
+#        echo "50000" > /proc/sys/kernel/sched_wakeup_granularity_ns
+#fi
+#if [ -e /proc/sys/kernel/hung_task_timeout_secs ]; then
+#        echo "30" > /proc/sys/kernel/hung_task_timeout_secs
+#fi
+#if [ -e /proc/sys/kernel/sem ]; then
+#        echo "500 512000 64 2048" > /proc/sys/kernel/sem
+#fi
 
 # Miscellaneous VM tweaks
 
-if [ -e /proc/sys/vm/page-cluster ]; then
-        echo "4" > /proc/sys/vm/page-cluster
-fi
-if [ -e /proc/sys/vm/laptop_mode ]; then
-        echo "10" > /proc/sys/vm/laptop_mode
-fi
-if [ -e /proc/sys/vm/dirty_writeback_centisecs ]; then
-        echo "2500" > /proc/sys/vm/dirty_writeback_centisecs
-fi
-if [ -e  /proc/sys/vm/dirty_expire_centisecs ]; then
-        echo "1000" > /proc/sys/vm/dirty_expire_centisecs
-fi
-if [ -e /proc/sys/vm/dirty_background_ratio ]; then
-        echo "55" > /proc/sys/vm/dirty_background_ratio
-fi
-if [ -e /proc/sys/vm/dirty_ratio ]; then
-        echo "90" > /proc/sys/vm/dirty_ratio
-fi
-if [ -e /proc/sys/vm/vfs_cache_pressure ]; then
-        echo "20" > /proc/sys/vm/vfs_cache_pressure
-fi
-if [ -e /proc/sys/vm/overcommit_memory ]; then
-        echo "1" > /proc/sys/vm/overcommit_memory
-fi
-if [ -e  /proc/sys/vm/oom_kill_allocating_task ]; then
-        echo "0" > /proc/sys/vm/oom_kill_allocating_task
-fi
-if [ -e /proc/sys/vm/panic_on_oom ]; then
-        echo "0" > /proc/sys/vm/panic_on_oom
-fi
-if [ -e /proc/sys/vm/swappiness ]; then
-        echo "0" > /proc/sys/vm/swappiness
-fi
-if [ -e /proc/sys/vm/min_free_kbytes ]; then
-        echo "1536" > /proc/sys/vm/min_free_kbytes
-fi
+#if [ -e /proc/sys/vm/page-cluster ]; then
+#        echo "4" > /proc/sys/vm/page-cluster
+#fi
+#if [ -e /proc/sys/vm/laptop_mode ]; then
+#        echo "10" > /proc/sys/vm/laptop_mode
+#fi
+#if [ -e /proc/sys/vm/dirty_writeback_centisecs ]; then
+#        echo "2500" > /proc/sys/vm/dirty_writeback_centisecs
+#fi
+#if [ -e  /proc/sys/vm/dirty_expire_centisecs ]; then
+#        echo "1000" > /proc/sys/vm/dirty_expire_centisecs
+#fi
+#if [ -e /proc/sys/vm/dirty_background_ratio ]; then
+#         echo "55" > /proc/sys/vm/dirty_background_ratio
+#fi
+#if [ -e /proc/sys/vm/dirty_ratio ]; then
+#        echo "90" > /proc/sys/vm/dirty_ratio
+#fi
+#if [ -e /proc/sys/vm/vfs_cache_pressure ]; then
+#        echo "20" > /proc/sys/vm/vfs_cache_pressure
+#fi
+#if [ -e /proc/sys/vm/overcommit_memory ]; then
+#        echo "1" > /proc/sys/vm/overcommit_memory
+#fi
+#if [ -e  /proc/sys/vm/oom_kill_allocating_task ]; then
+#        echo "0" > /proc/sys/vm/oom_kill_allocating_task
+#fi
+#if [ -e /proc/sys/vm/panic_on_oom ]; then
+#        echo "0" > /proc/sys/vm/panic_on_oom
+#fi
+#if [ -e /proc/sys/vm/swappiness ]; then
+#        echo "0" > /proc/sys/vm/swappiness
+#fi
+#if [ -e /proc/sys/vm/min_free_kbytes ]; then
+#        echo "1536" > /proc/sys/vm/min_free_kbytes
+#fi
 
 # Miscellaneous Net tweaks
 
-if [ -e /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts ]; then
-        echo "1" > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
-fi
-if [ -e /proc/sys/net/ipv4/icmp_echo_ignore_all ]; then
-        echo "1" > /proc/sys/net/ipv4/icmp_echo_ignore_all
-fi
-if [ -e /proc/sys/net/ipv4/icmp_ignore_bogus_error_responses ]; then
-        echo "1" > /proc/sys/net/ipv4/icmp_ignore_bogus_error_responses
-fi
-if [ -e /proc/sys/net/ipv4/tcp_max_syn_backlog ]; then
-        echo "4096" > /proc/sys/net/ipv4/tcp_max_syn_backlog
-fi
-if [ -e /proc/sys/net/ipv4/tcp_timestamps ]; then
-        echo "0" > /proc/sys/net/ipv4/tcp_timestamps
-fi
-if [ -e /proc/sys/net/ipv4/tcp_tw_reuse ]; then
-        echo "1" > /proc/sys/net/ipv4/tcp_tw_reuse
-fi
-if [ -e /proc/sys/net/ipv4/tcp_sack ]; then
-        echo "1" > /proc/sys/net/ipv4/tcp_sack
-fi
-if [ -e /proc/sys/net/ipv4/tcp_ecn ]; then
-        echo "0" > /proc/sys/net/ipv4/tcp_ecn
-fi
-if [ -e /proc/sys/net/ipv4/tcp_dsack ]; then
-        echo "1" > /proc/sys/net/ipv4/tcp_dsack
-fi
-if [ -e /proc/sys/net/ipv4/tcp_tw_recycle ]; then
-        echo "1" > /proc/sys/net/ipv4/tcp_tw_recycle
-fi
-if [ -e /proc/sys/net/ipv4/tcp_window_scaling ]; then
-        echo "1" > /proc/sys/net/ipv4/tcp_window_scaling
-fi
-if [ -e /proc/sys/net/ipv4/tcp_keepalive_probes ]; then
-        echo "5" > /proc/sys/net/ipv4/tcp_keepalive_probes
-fi
-if [ -e /proc/sys/net/ipv4/tcp_keepalive_intvl ]; then
-        echo "30" > /proc/sys/net/ipv4/tcp_keepalive_intvl
-fi
-if [ -e /proc/sys/net/ipv4/tcp_fin_timeout ]; then
-        echo "30" > /proc/sys/net/ipv4/tcp_fin_timeout
-fi
-if [ -e /proc/sys/net/ipv4/tcp_moderate_rcvbuf ]; then
-        echo "1" > /proc/sys/net/ipv4/tcp_moderate_rcvbuf
-fi
-if [ -e /proc/sys/net/core/netdev_max_backlog ]; then
-        echo "2500" > /proc/sys/net/core/netdev_max_backlog
-fi
+#if [ -e /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts ]; then
+#        echo "1" > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
+#fi
+#if [ -e /proc/sys/net/ipv4/icmp_echo_ignore_all ]; then
+#        echo "1" > /proc/sys/net/ipv4/icmp_echo_ignore_all
+#fi
+#if [ -e /proc/sys/net/ipv4/icmp_ignore_bogus_error_responses ]; then
+#        echo "1" > /proc/sys/net/ipv4/icmp_ignore_bogus_error_responses
+#fi
+#if [ -e /proc/sys/net/ipv4/tcp_max_syn_backlog ]; then
+#        echo "4096" > /proc/sys/net/ipv4/tcp_max_syn_backlog
+#fi
+#if [ -e /proc/sys/net/ipv4/tcp_timestamps ]; then
+#        echo "0" > /proc/sys/net/ipv4/tcp_timestamps
+#fi
+#if [ -e /proc/sys/net/ipv4/tcp_tw_reuse ]; then
+#        echo "1" > /proc/sys/net/ipv4/tcp_tw_reuse
+#fi
+#if [ -e /proc/sys/net/ipv4/tcp_sack ]; then
+#        echo "1" > /proc/sys/net/ipv4/tcp_sack
+#fi
+#if [ -e /proc/sys/net/ipv4/tcp_ecn ]; then
+#        echo "0" > /proc/sys/net/ipv4/tcp_ecn
+#fi
+#if [ -e /proc/sys/net/ipv4/tcp_dsack ]; then
+#        echo "1" > /proc/sys/net/ipv4/tcp_dsack
+#fi
+#if [ -e /proc/sys/net/ipv4/tcp_tw_recycle ]; then
+#        echo "1" > /proc/sys/net/ipv4/tcp_tw_recycle
+#fi
+#if [ -e /proc/sys/net/ipv4/tcp_window_scaling ]; then
+#        echo "1" > /proc/sys/net/ipv4/tcp_window_scaling
+#fi
+#if [ -e /proc/sys/net/ipv4/tcp_keepalive_probes ]; then
+#        echo "5" > /proc/sys/net/ipv4/tcp_keepalive_probes
+#fi
+#if [ -e /proc/sys/net/ipv4/tcp_keepalive_intvl ]; then
+#        echo "30" > /proc/sys/net/ipv4/tcp_keepalive_intvl
+#fi
+#if [ -e /proc/sys/net/ipv4/tcp_fin_timeout ]; then
+#        echo "30" > /proc/sys/net/ipv4/tcp_fin_timeout
+#fi
+#if [ -e /proc/sys/net/ipv4/tcp_moderate_rcvbuf ]; then
+#        echo "1" > /proc/sys/net/ipv4/tcp_moderate_rcvbuf
+#fi
+#if [ -e /proc/sys/net/core/netdev_max_backlog ]; then
+#        echo "2500" > /proc/sys/net/core/netdev_max_backlog
+#fi
 
 # Miscellaneous System tweaks
 
-if [ -e /sys/module/lowmemorykiller/parameters/minfree ]; then
-        echo "10240,12288,14336,16384,20480,24576" > /sys/module/lowmemorykiller/parameters/minfree
-fi
-if [ -e /proc/sys/fs/lease-break-time ]; then
-        echo "10" > /proc/sys/fs/lease-break-time
-fi
+#if [ -e /sys/module/lowmemorykiller/parameters/minfree ]; then
+#        echo "10240,12288,14336,16384,20480,24576" > /sys/module/lowmemorykiller/parameters/minfree
+#fi
+#if [ -e /proc/sys/fs/lease-break-time ]; then
+#        echo "10" > /proc/sys/fs/lease-break-time
+#fi
 
 # Boost SD Cards
 #chmod 777 /sys/block/mmcblk0/queue/read_ahead_kb
