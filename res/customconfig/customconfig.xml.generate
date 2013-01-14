@@ -19,7 +19,7 @@ echo '
     </settingsPane>
 
     <settingsPane description="CPU scaling" 
-                  name="CPU Scaling">' >> $XML
+                  name="CPU OC/UV">' >> $XML
 
 echo "
       <spinner description=\"Set the maximum frequency the CPU scales up to. Default: `cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq | rev | cut -c 4- | rev` MHz.\" 
@@ -319,6 +319,78 @@ echo '
     </settingsPane>
   </settingsTab>
 
+  <settingsTab name="GPU">
+
+    <settingsPane description="Apply the settings on boot only if the desired settings prove to be stable, else the device ends up in a boot-loop. If turned off, the displayed values do not correspond the current live values but the saved profile values, some inconsistencies may occur on applying." 
+                  name="GPU control switch">
+      <checkbox description="If enabled, the below settings will be applied at boot." 
+                name="Set GPU settings on boot" 
+                action="controlswitch GPU" 
+                label="Set on boot"/>
+    </settingsPane>' >> $XML
+
+echo "
+    <settingsPane description=\"By editing the following configurables you can change the performance behaviour of the GPU.\" 
+                  name=\"GPU scaling settings\">
+
+      <spinner description=\"Set the maximum frequency the GPU scales up to. Default: `cat /sys/devices/system/gpu/max_freq`MHz.\" 
+               name=\"GPU max frequency\" 
+               action=\"gpugeneric /sys/devices/system/gpu/max_freq\">" >> $XML
+
+while read FREQ; do
+  echo "<spinnerItem name=\"$FREQ MHz\" value=\"$FREQ\"/>" >> $XML
+done < /sys/devices/system/gpu/freq_table
+
+echo "
+      </spinner>
+      <spinner description=\"Set the minimum frequency the GPU scales down to. Default: `cat /sys/devices/system/gpu/min_freq`MHz.\" 
+               name=\"GPU min frequency\" 
+               action=\"gpugeneric /sys/devices/system/gpu/min_freq\">" >> $XML
+
+while read FREQ; do
+  echo "
+        <spinnerItem name=\"$FREQ MHz\" value=\"$FREQ\"/>" >> $XML
+done < /sys/devices/system/gpu/freq_table
+
+echo '
+      </spinner>' >> $XML
+
+read trash1 UP trash2 DIFF < /sys/devices/system/gpu/thresholds
+
+echo "
+     <seekBar  description=\"If load in the last sampling period exceeds the set threshold percentage, the GPU jumps to the next higher frequency step. Default: ${UP}%.\" 
+               name=\"Up threshold\" 
+               action=\"gputhresholds UP\" 
+               unit=\"%\" min=\"30\" reversed=\"false\" step=\"1\" max=\"99\"/>" >> $XML
+
+echo "
+     <seekBar  description=\"If load falls below (up threshold - down differential), the GPU dynamically lowers down its clock to a frequency step accomodating the last sampled load without triggering the up threshold on the next sample. The down differential cannot be set higher than (99 - up threshold). Default: ${DIFF}%.\"
+               name=\"Down differential\" 
+               action=\"gputhresholds DIFF\" 
+               unit=\"%\" min=\"1\" reversed=\"false\" step=\"1\" max=\"50\"/>" >> $XML
+
+echo "
+     <seekBar  description=\"The timeout between reportings to the DVFS logic of the GPU utilization. It dictates the sampling speed. Default: `cat /sys/devices/system/gpu/utilization_timeout`.\"
+               name=\"Utilization timeout\" 
+               action=\"gpugeneric /sys/devices/system/gpu/utilization_timeout\" 
+               unit=\"ms\" min=\"25\" reversed=\"false\" step=\"25\" max=\"1000\"/>" >> $XML
+
+echo '
+    </settingsPane>
+    <settingsPane description="" name="GPU voltage control">' >> $XML
+
+while read FREQ VOLT; do
+  echo "<seekBar  description=\"Default voltage: $VOLT\" 
+	          name=\"${FREQ%???} MHz step\" 
+                  action=\"gpuvolt ${FREQ%???}\"
+                  unit=\" mV\" min=\"600\" reversed=\"false\" step=\"25\" max=\"1200\"/>" >> $XML
+done < /sys/devices/system/gpu/volt_table
+
+echo '
+    </settingsPane>' >> $XML
+echo '
+  </settingsTab>
+
   <settingsTab name="I/O">
     <settingsPane description="Set the active I/O elevator algorithm. The scheduler decides how to handle I/O requests and how to handle them. SIO is the everyday recommended default scheduler for RedPill."  
       name="I/O schedulers">' >> $XML
@@ -460,6 +532,13 @@ echo "
              <spinnerItem name=\"Blinking\" value=\"0\"/>
              <spinnerItem name=\"Fading\" value=\"1\"/>
       </spinner>
+      <spinner description=\"Sets the CPU Idle Mode. AFTR+LPA is the default on RedPill and best for the battery life but if you have problems try Idle+LPA.\" name=\"CPU Idle Mode\" action=\"generic /sys/module/cpuidle_exynos4/parameters/enable_mask\">
+             <spinnerItem name=\"AFTR + LPA (default)\" value=\"3\"/>
+             <spinnerItem name=\"Idle + LPA\" value=\"2\"/>
+             <spinnerItem name=\"AFTR only\" value=\"1\"/>
+             <spinnerItem name=\"Idle only\" value=\"0\"/>
+      </spinner>
+      <seekBar description=\"Sets the sched_mc value which changes the cpu scheduler behaviour for multi-cpu systems. 0 is Samsung kernel's default value which turns sched_mc off. Setting it to 1 means that the first core will be tried to be loaded more and setting it to 2 will bias task wake-ups to semi-idle cpu package for power savings. (default: 1)\" name=\"sched_mc\" action=\"generic /sys/devices/system/cpu/sched_mc_power_savings\" unit=\"\" min=\"0\" reversed=\"false\" step=\"1\" max=\"2\"/>  
     </settingsPane>
   </settingsTab>
 </settingsRoot>" >> $XML
