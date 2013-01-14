@@ -5,3 +5,5 @@ logger=on
 led_fade=1
 ext2intexfat=off
 ext2intfat=off
+enable_mask=3
+sched_mc_power_savings=1
